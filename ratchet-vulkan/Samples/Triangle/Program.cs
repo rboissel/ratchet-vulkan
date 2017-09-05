@@ -25,15 +25,14 @@ namespace Triangle
             Ratchet.Drawing.Vulkan.VkInstance Instance = new Ratchet.Drawing.Vulkan.VkInstance(ref InstanceCreateInfo);
 
 
-            List<Ratchet.Drawing.Vulkan.VkPhysicalDevice> PhysicalDevices = Instance.vkEnumeratePhysicalDevices();
-            Ratchet.Drawing.Vulkan.VkPhysicalDeviceMemoryProperties physicalDeviceMemoryProperties = PhysicalDevices[0].GetPhysicalDeviceMemoryProperties();
-            Ratchet.Drawing.Vulkan.VkQueueFamilyProperties[] QueueFamily = PhysicalDevices[0].GetPhysicalDeviceQueueFamilyProperties();
+            Ratchet.Drawing.Vulkan.VkPhysicalDevice[] PhysicalDevices = Instance.vkEnumeratePhysicalDevices();
 
             Ratchet.Drawing.Vulkan.VkDeviceCreateInfo DeviceCreateInfo = new Ratchet.Drawing.Vulkan.VkDeviceCreateInfo();
-            DeviceCreateInfo.queueCreateInfos = new List<Ratchet.Drawing.Vulkan.VkDeviceQueueCreateInfo>();
-            DeviceCreateInfo.queueCreateInfos.Add(new Ratchet.Drawing.Vulkan.VkDeviceQueueCreateInfo() { queueCount = 1, queueFamilyIndex = 0, queuePriorities = new List<float>(new float[] { 0.0f })});
+            DeviceCreateInfo.queueCreateInfos = new Ratchet.Drawing.Vulkan.VkDeviceQueueCreateInfo[]
+            {
+                new Ratchet.Drawing.Vulkan.VkDeviceQueueCreateInfo() { queueCount = 1, queueFamilyIndex = 0, queuePriorities = new float[]{ 0.0f } }
+            };
             Ratchet.Drawing.Vulkan.VkDevice Device = PhysicalDevices[0].CreateDevice(ref DeviceCreateInfo);
-            Device.CreateCommandPool();
             Application.Run(new Form1());
         }
     }

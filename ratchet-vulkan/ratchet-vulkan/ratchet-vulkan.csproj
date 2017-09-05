@@ -49,6 +49,7 @@
     <Compile Include="VkApplicationInfo.cs" />
     <Compile Include="VkAttachmentDescription.cs" />
     <Compile Include="VkAttachmentReference.cs" />
+    <Compile Include="VkCommandPool.cs" />
     <Compile Include="VkCommandPoolCreateInfo.cs" />
     <Compile Include="VkDependencyFlag.cs" />
     <Compile Include="VkDevice.cs" />

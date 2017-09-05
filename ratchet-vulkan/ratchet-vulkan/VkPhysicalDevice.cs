@@ -24,16 +24,23 @@ namespace Ratchet.Drawing.Vulkan
             vkCreateDevice = _ParentInstance.vkGetInstanceProcAddr<vkCreateDevice_func>("vkCreateDevice");
             vkGetPhysicalDeviceQueueFamilyProperties = _ParentInstance.vkGetInstanceProcAddr<vkGetPhysicalDeviceQueueFamilyProperties_func>("vkGetPhysicalDeviceQueueFamilyProperties");
             vkGetPhysicalDeviceMemoryProperties = _ParentInstance.vkGetInstanceProcAddr<vkGetPhysicalDeviceMemoryProperties_func>("vkGetPhysicalDeviceMemoryProperties");
+            _PhysicalDeviceMemoryProperty = GetPhysicalDeviceMemoryProperties();
+            _PhysicalDeviceQueueFamilyProperties = GetPhysicalDeviceQueueFamilyProperties();
         }
 
-        public unsafe VkPhysicalDeviceMemoryProperties GetPhysicalDeviceMemoryProperties()
+        VkPhysicalDeviceMemoryProperties _PhysicalDeviceMemoryProperty;
+        public VkPhysicalDeviceMemoryProperties MemoryProperty { get { return _PhysicalDeviceMemoryProperty; } }
+
+        unsafe VkPhysicalDeviceMemoryProperties GetPhysicalDeviceMemoryProperties()
         {
             VkPhysicalDeviceMemoryProperties properties = new VkPhysicalDeviceMemoryProperties();
             vkGetPhysicalDeviceMemoryProperties(_Handle, ref properties);
             return properties;
         }
 
-        public unsafe VkQueueFamilyProperties[] GetPhysicalDeviceQueueFamilyProperties()
+        VkQueueFamilyProperties[] _PhysicalDeviceQueueFamilyProperties;
+        public VkQueueFamilyProperties[] QueueFamilyProperties { get { return _PhysicalDeviceQueueFamilyProperties; } }
+        unsafe VkQueueFamilyProperties[] GetPhysicalDeviceQueueFamilyProperties()
         {
             List<VkQueueFamilyProperties> result = new List<VkQueueFamilyProperties>();
             if (vkGetPhysicalDeviceQueueFamilyProperties != null)
@@ -63,8 +70,8 @@ namespace Ratchet.Drawing.Vulkan
                 deviceQueueCreateInfo_native.sType = VkStructureType.VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
                 deviceQueueCreateInfo_native.flags = 0;
                 deviceQueueCreateInfo_native.pEnabledFeatures = new IntPtr(0); // For now it will stay unset
-                deviceQueueCreateInfo_native.queueCreateInfoCount = deviceQueueCreateInfo.queueCreateInfos == null ? 0 : (uint)deviceQueueCreateInfo.queueCreateInfos.Count;
-                deviceQueueCreateInfo_native.pQueueCreateInfos = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(IntPtr) * deviceQueueCreateInfo_native.queueCreateInfoCount));
+                deviceQueueCreateInfo_native.queueCreateInfoCount = deviceQueueCreateInfo.queueCreateInfos == null ? 0 : (uint)deviceQueueCreateInfo.queueCreateInfos.Length;
+                deviceQueueCreateInfo_native.pQueueCreateInfos = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(VkDeviceQueueCreateInfo_Native) * deviceQueueCreateInfo_native.queueCreateInfoCount));
                 if (deviceQueueCreateInfo_native.pQueueCreateInfos == null) { throw new OutOfMemoryException(); }
                 VkDeviceQueueCreateInfo_Native* pQueueCreateInfos = (VkDeviceQueueCreateInfo_Native*)deviceQueueCreateInfo_native.pQueueCreateInfos.ToPointer();
                 for (int n = 0; n < deviceQueueCreateInfo_native.queueCreateInfoCount; n++)
@@ -74,8 +81,8 @@ namespace Ratchet.Drawing.Vulkan
                     pQueueCreateInfos[n].sType = VkStructureType.VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
                     pQueueCreateInfos[n].queueCount = deviceQueueCreateInfo.queueCreateInfos[n].queueCount;
                     pQueueCreateInfos[n].queueFamilyIndex = deviceQueueCreateInfo.queueCreateInfos[n].queueFamilyIndex;
-                    pQueueCreateInfos[n].pQueuePriorities = (float*)System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(float) * deviceQueueCreateInfo.queueCreateInfos[n].queuePriorities.Count)).ToPointer();
-                    for (int  x = 0; x < deviceQueueCreateInfo.queueCreateInfos[n].queuePriorities.Count; x++)
+                    pQueueCreateInfos[n].pQueuePriorities = (float*)System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(float) * deviceQueueCreateInfo.queueCreateInfos[n].queuePriorities.Length)).ToPointer();
+                    for (int  x = 0; x < deviceQueueCreateInfo.queueCreateInfos[n].queuePriorities.Length; x++)
                     {
                         pQueueCreateInfos[n].pQueuePriorities[x] = deviceQueueCreateInfo.queueCreateInfos[n].queuePriorities[x];
                     }
@@ -96,7 +103,6 @@ namespace Ratchet.Drawing.Vulkan
                 return new VkDevice(this, deviceHandle);
             }
             else { throw new Exception("The method vkCreateDevice can't be accessed"); }
-            return null;
         }
     }
 }

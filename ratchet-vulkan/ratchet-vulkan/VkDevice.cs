@@ -38,7 +38,7 @@ namespace Ratchet.Drawing.Vulkan
             vkWaitForFences = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkWaitForFences_func>("vkWaitForFences");
         }
 
-        public unsafe VkDeviceMemory AllocateMemory(VkMemoryAllocateInfo allocateInfo)
+        public unsafe VkDeviceMemory AllocateMemory(ref VkMemoryAllocateInfo allocateInfo)
         {
             if (vkAllocateMemory != null)
             {
@@ -57,12 +57,40 @@ namespace Ratchet.Drawing.Vulkan
             else { throw new NotImplementedException(); }
         }
 
-        public unsafe void CreateCommandPool()
+        public VkDeviceMemory AllocateMemory(ulong allocationSize, uint memoryTypeIndex)
         {
-
+            VkMemoryAllocateInfo allocateInfo = new VkMemoryAllocateInfo();
+            allocateInfo.allocationSize = allocationSize;
+            allocateInfo.memoryTypeIndex = memoryTypeIndex;
+            return AllocateMemory(ref allocateInfo);
         }
 
-        public unsafe VkFence CreateFence(VkFenceCreateInfo fenceCreateInfo)
+        public unsafe VkCommandPool CreateCommandPool(ref VkCommandPoolCreateInfo commandPoolCreateInfo)
+        {
+            IntPtr commandPoolHandle = new IntPtr(0);
+            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+            VkCommandPoolCreateInfo_Native commandPoolCreateInfo_native = new VkCommandPoolCreateInfo_Native();
+            commandPoolCreateInfo_native.flags = commandPoolCreateInfo.flags;
+            commandPoolCreateInfo_native.queueFamilyIndex = commandPoolCreateInfo.queueFamilyIndex;
+            commandPoolCreateInfo_native.sType = VkStructureType.VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            commandPoolCreateInfo_native.pNext = new IntPtr(0);
+
+            VkResult result = vkCreateCommandPool(_Handle, new IntPtr(&commandPoolCreateInfo_native), ref allocator, new IntPtr(&commandPoolHandle));
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+
+            VkCommandPool VkCommandPool = new VkCommandPool(commandPoolHandle, this);
+            return VkCommandPool;
+        }
+
+        public VkCommandPool CreateCommandPool(VkCommandPoolCreateFlag flags, UInt32 queueFamilyIndex)
+        {
+            VkCommandPoolCreateInfo commandPoolCreateInfo = new VkCommandPoolCreateInfo();
+            commandPoolCreateInfo.flags = flags;
+            commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex;
+            return CreateCommandPool(ref commandPoolCreateInfo);
+        }
+
+        public unsafe VkFence CreateFence(ref VkFenceCreateInfo fenceCreateInfo)
         {
             IntPtr fenceHandle = new IntPtr(0);
             VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
@@ -78,7 +106,14 @@ namespace Ratchet.Drawing.Vulkan
             return VkFence;
         }
 
-        public unsafe VkRenderPass CreateRenderPass(VkRenderPassCreateInfo renderPassCreateInfo)
+        public VkFence CreateFence(VkFenceCreateFlag flags)
+        {
+            VkFenceCreateInfo fenceCreateInfo = new VkFenceCreateInfo();
+            fenceCreateInfo.flags = flags;
+            return CreateFence(ref fenceCreateInfo);
+        }
+
+        public unsafe VkRenderPass CreateRenderPass(ref VkRenderPassCreateInfo renderPassCreateInfo)
         {
             for (int n = 0; n < renderPassCreateInfo.subpasses.Length; n++)
             {
@@ -188,6 +223,15 @@ namespace Ratchet.Drawing.Vulkan
             if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
 
             return new VkRenderPass(renderPassHandle, this);
+        }
+
+        public VkRenderPass CreateRenderPass(VkAttachmentDescription[] attachments, VkSubpassDescription[] subpasses, VkSubpassDependency[] dependencies)
+        {
+            VkRenderPassCreateInfo renderPassCreateInfo = new VkRenderPassCreateInfo();
+            renderPassCreateInfo.attachments = attachments;
+            renderPassCreateInfo.subpasses = subpasses;
+            renderPassCreateInfo.dependencies = dependencies;
+            return CreateRenderPass(ref renderPassCreateInfo);
         }
 
         public unsafe bool WaitForFences(VkFence[] fences, bool waitAll, UInt64 timeout)

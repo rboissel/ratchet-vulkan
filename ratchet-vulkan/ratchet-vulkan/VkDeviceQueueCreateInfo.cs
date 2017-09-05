@@ -23,6 +23,6 @@ namespace Ratchet.Drawing.Vulkan
     {
         public UInt32 queueFamilyIndex;
         public UInt32 queueCount;
-        public List<float> queuePriorities;
+        public float[] queuePriorities;
     }
 }

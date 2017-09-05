@@ -22,7 +22,7 @@ namespace Ratchet.Drawing.Vulkan
             public delegate VkResult vkEnumeratePhysicalDevices_func(IntPtr instance, UInt32* pPhysicalDeviceCount, IntPtr pPhysicalDevices);
             vkEnumeratePhysicalDevices_func _vkEnumeratePhysicalDevices = null;
 
-            public List<VkPhysicalDevice> vkEnumeratePhysicalDevices()
+            public VkPhysicalDevice[] vkEnumeratePhysicalDevices()
             {
                 lock (this)
                 {
@@ -60,7 +60,7 @@ namespace Ratchet.Drawing.Vulkan
 
                         System.Runtime.InteropServices.Marshal.FreeHGlobal(pPhysicalDevices);
                     }
-                    return list;
+                    return list.ToArray();
                 }
             }
         }
@@ -112,8 +112,8 @@ namespace Ratchet.Drawing.Vulkan
             createInfo_native.flags = 0;
             createInfo_native.pNext = new IntPtr(0);
             createInfo_native.sType = VkStructureType.VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-            createInfo_native.enabledExtensionCount = (UInt32)(createInfo.enabledExtensionNames != null ? createInfo.enabledExtensionNames.Count : 0);
-            createInfo_native.enabledLayerCount = (UInt32)(createInfo.enabledLayerNames != null ? createInfo.enabledLayerNames.Count : 0);
+            createInfo_native.enabledExtensionCount = (UInt32)(createInfo.enabledExtensionNames != null ? createInfo.enabledExtensionNames.Length : 0);
+            createInfo_native.enabledLayerCount = (UInt32)(createInfo.enabledLayerNames != null ? createInfo.enabledLayerNames.Length : 0);
             createInfo_native.applicationInfo = new IntPtr(&applicationInfo_native);
 
             HashSet<string> WDDMCompatibleDriversHashMap = new HashSet<string>();
@@ -141,14 +141,14 @@ namespace Ratchet.Drawing.Vulkan
             System.Runtime.InteropServices.Marshal.FreeHGlobal(applicationInfo_native.engineName);
         }
 
-        public List<VkPhysicalDevice> vkEnumeratePhysicalDevices()
+        public VkPhysicalDevice[] vkEnumeratePhysicalDevices()
         {
             List<VkPhysicalDevice> list = new List<VkPhysicalDevice>();
             foreach (VkSubInstance subInstance in VkSubInstances)
             {
                 list.AddRange(subInstance.vkEnumeratePhysicalDevices());
             }
-            return list;
+            return list.ToArray();
         }
     }
 }

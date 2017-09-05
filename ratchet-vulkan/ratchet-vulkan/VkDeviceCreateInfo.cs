@@ -25,9 +25,9 @@ namespace Ratchet.Drawing.Vulkan
     [StructLayout(LayoutKind.Sequential)]
     public struct VkDeviceCreateInfo
     {
-        public List<VkDeviceQueueCreateInfo> queueCreateInfos;
-        public List<string> enabledLayerNames;
-        public List<string> enabledExtensionNames;
+        public VkDeviceQueueCreateInfo[] queueCreateInfos;
+        public string[] enabledLayerNames;
+        public string[] enabledExtensionNames;
         // public IntPtr pEnabledFeatures;
     }
 }

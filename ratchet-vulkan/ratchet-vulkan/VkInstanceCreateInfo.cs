@@ -24,7 +24,7 @@ namespace Ratchet.Drawing.Vulkan
     public struct VkInstanceCreateInfo
     {
         public VkApplicationInfo applicationInfo;
-        public List<string> enabledLayerNames;
-        public List<string> enabledExtensionNames;
+        public string[] enabledLayerNames;
+        public string[] enabledExtensionNames;
     }
 }
