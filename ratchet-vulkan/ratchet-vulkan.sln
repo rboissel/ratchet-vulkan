@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.15
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ratchet-vulkan", "ratchet-vulkan\ratchet-vulkan.csproj", "{9CFB0611-D468-468C-89FF-EA1706981F5A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2BD59CB7-5668-4A76-8F91-3292DCF0C2CD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Triangle", "Samples\Triangle\Triangle.csproj", "{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9CFB0611-D468-468C-89FF-EA1706981F5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CFB0611-D468-468C-89FF-EA1706981F5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CFB0611-D468-468C-89FF-EA1706981F5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CFB0611-D468-468C-89FF-EA1706981F5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D} = {2BD59CB7-5668-4A76-8F91-3292DCF0C2CD}
+	EndGlobalSection
+EndGlobal
