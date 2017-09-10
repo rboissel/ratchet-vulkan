@@ -59,10 +59,10 @@ namespace Ratchet.Drawing.Vulkan
                     for (int n = 0; n < count; n++)
                     {
                         VkQueueFamilyProperties vkQueueFamily = new VkQueueFamilyProperties();
-                        vkQueueFamily.minImageTransferGranularity = pVkQueueFamilyProperties->minImageTransferGranularity;
-                        vkQueueFamily.queueCount = pVkQueueFamilyProperties->queueCount;
-                        vkQueueFamily.queueFlags = pVkQueueFamilyProperties->queueFlags;
-                        vkQueueFamily.timestampValidBits = pVkQueueFamilyProperties->timestampValidBits;
+                        vkQueueFamily.minImageTransferGranularity = pVkQueueFamilyProperties[n].minImageTransferGranularity;
+                        vkQueueFamily.queueCount = pVkQueueFamilyProperties[n].queueCount;
+                        vkQueueFamily.queueFlags = pVkQueueFamilyProperties[n].queueFlags;
+                        vkQueueFamily.timestampValidBits = pVkQueueFamilyProperties[n].timestampValidBits;
                         vkQueueFamily.index = (UInt32)n;
                         vkQueueFamily.physicalDevice = this;
                         result.Add(vkQueueFamily);

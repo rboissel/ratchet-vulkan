@@ -29,14 +29,14 @@ namespace Ratchet.Drawing.Vulkan
     [StructLayout(LayoutKind.Sequential)]
     public struct VkAttachmentDescription
     {
-        VkAttachmentDescriptionFlags flags;
-        VkFormat format;
-        VkSampleCountFlagBits samples;
-        VkAttachmentLoadOp loadOp;
-        VkAttachmentStoreOp storeOp;
-        VkAttachmentLoadOp stencilLoadOp;
-        VkAttachmentStoreOp stencilStoreOp;
-        VkImageLayout initialLayout;
-        VkImageLayout finalLayout;
+        public VkAttachmentDescriptionFlags flags;
+        public VkFormat format;
+        public VkSampleCountFlagBits samples;
+        public VkAttachmentLoadOp loadOp;
+        public VkAttachmentStoreOp storeOp;
+        public VkAttachmentLoadOp stencilLoadOp;
+        public VkAttachmentStoreOp stencilStoreOp;
+        public VkImageLayout initialLayout;
+        public VkImageLayout finalLayout;
     }
 }

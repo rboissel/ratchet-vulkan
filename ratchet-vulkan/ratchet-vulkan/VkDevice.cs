@@ -161,6 +161,11 @@ namespace Ratchet.Drawing.Vulkan
             return CreateSemaphore(ref VkSemaphoreCreateInfo);
         }
 
+        public VkImage CreateImage()
+        {
+
+        }
+
         public unsafe VkRenderPass CreateRenderPass(ref VkRenderPassCreateInfo renderPassCreateInfo)
         {
             for (int n = 0; n < renderPassCreateInfo.subpasses.Length; n++)
@@ -181,7 +186,7 @@ namespace Ratchet.Drawing.Vulkan
 
 
             VkSubpassDescription[] subpasses = renderPassCreateInfo.subpasses;
-            if (subpasses == null) { subpasses = new VkSubpassDescription[0]; }
+            if (subpasses == null || subpasses.Length == 0) { throw new Exception("A Render pass must at least have one subpass"); }
 
             VkSubpassDescription_Native[] subpasses_native = new VkSubpassDescription_Native[subpasses.Length];
             for (int n = 0; n < subpasses.Length; n++)
@@ -243,13 +248,39 @@ namespace Ratchet.Drawing.Vulkan
 
             VkResult result = VkResult.VK_SUCCESS;
 
-            fixed (VkSubpassDependency* pDependecies = &dependencies[0])
+            fixed (VkSubpassDescription_Native* pSubpasses = &subpasses_native[0])
             {
-                fixed (VkAttachmentDescription* pAttachment = &attachments[0])
+                if (attachments.Length > 0 && dependencies.Length > 0)
                 {
-                    fixed (VkSubpassDescription_Native* pSubpasses = &subpasses_native[0])
+                    fixed (VkAttachmentDescription* pAttachment = &attachments[0])
                     {
+                        fixed (VkSubpassDependency* pDependecies = &dependencies[0])
+                        {
+                            renderPassCreateInfo_Native.pAttachments = new IntPtr(pAttachment);
+                            renderPassCreateInfo_Native.pDependencies = new IntPtr(pDependecies);
+                            renderPassCreateInfo_Native.pSubpasses = new IntPtr(pSubpasses);
+                            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+                            result = vkCreateRenderPass(_Handle, new IntPtr(&renderPassCreateInfo_Native), ref allocator, new IntPtr(&renderPassHandle));
+                        }
+                    }
+                }
+                else if (attachments.Length > 0)
+                {
+                    fixed (VkAttachmentDescription* pAttachment = &attachments[0])
+                    {
+
                         renderPassCreateInfo_Native.pAttachments = new IntPtr(pAttachment);
+                        renderPassCreateInfo_Native.pDependencies = new IntPtr(0);
+                        renderPassCreateInfo_Native.pSubpasses = new IntPtr(pSubpasses);
+                        VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+                        result = vkCreateRenderPass(_Handle, new IntPtr(&renderPassCreateInfo_Native), ref allocator, new IntPtr(&renderPassHandle));
+                    }
+                }
+                else
+                {
+                    fixed (VkSubpassDependency* pDependecies = &dependencies[0])
+                    {
+                        renderPassCreateInfo_Native.pAttachments = new IntPtr(0);
                         renderPassCreateInfo_Native.pDependencies = new IntPtr(pDependecies);
                         renderPassCreateInfo_Native.pSubpasses = new IntPtr(pSubpasses);
                         VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
