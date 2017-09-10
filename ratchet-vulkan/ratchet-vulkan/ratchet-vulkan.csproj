@@ -49,6 +49,8 @@
     <Compile Include="VkApplicationInfo.cs" />
     <Compile Include="VkAttachmentDescription.cs" />
     <Compile Include="VkAttachmentReference.cs" />
+    <Compile Include="VkCommandBuffer.cs" />
+    <Compile Include="VkCommandBufferAllocateInfo.cs" />
     <Compile Include="VkCommandPool.cs" />
     <Compile Include="VkCommandPoolCreateInfo.cs" />
     <Compile Include="VkDependencyFlag.cs" />
@@ -72,12 +74,16 @@
     <Compile Include="VkPhysicalDeviceMemoryProperties.cs" />
     <Compile Include="VkPipelineBindPoint.cs" />
     <Compile Include="VkPipelineStageFlags.cs" />
+    <Compile Include="VkQueue.cs" />
     <Compile Include="VkQueueFamilyProperties.cs" />
     <Compile Include="VkRenderPass.cs" />
     <Compile Include="VkRenderPassCreateInfo.cs" />
     <Compile Include="VkResult.cs" />
     <Compile Include="VkSampleCountFlagBits.cs" />
+    <Compile Include="VkSemaphore.cs" />
+    <Compile Include="VkSemaphoreCreateInfo.cs" />
     <Compile Include="VkStrutureType.cs" />
+    <Compile Include="VkSubmitInfo.cs" />
     <Compile Include="VkSubpassDependency.cs" />
     <Compile Include="VkSubpassDescription.cs" />
     <Compile Include="VkSystemAllocationScope.cs" />

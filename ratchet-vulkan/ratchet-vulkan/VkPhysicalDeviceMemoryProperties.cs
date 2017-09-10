@@ -9,7 +9,7 @@ namespace Ratchet.Drawing.Vulkan
 {
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct VkPhysicalDeviceMemoryProperties
+    public struct VkPhysicalDeviceMemoryProperties_Native
     {
         const int VK_MAX_MEMORY_TYPES = 32;
         const int VK_MAX_MEMORY_HEAPS = 16;
@@ -19,6 +19,13 @@ namespace Ratchet.Drawing.Vulkan
         public VkMemoryType[] memoryTypes;
         public UInt32 memoryHeapCount;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = VK_MAX_MEMORY_HEAPS)]
+        public VkMemoryHeap[] memoryHeaps;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct VkPhysicalDeviceMemoryProperties
+    {
+        public VkMemoryType[] memoryTypes;
         public VkMemoryHeap[] memoryHeaps;
     }
 }

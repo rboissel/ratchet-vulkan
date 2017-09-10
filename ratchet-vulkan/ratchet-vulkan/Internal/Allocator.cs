@@ -10,7 +10,12 @@ namespace Ratchet.Drawing.Vulkan
     {
         static IntPtr Allocation(IntPtr pUserData, IntPtr size, IntPtr alignment, VkSystemAllocationScope allocationScope)
         {
-            return System.Runtime.InteropServices.Marshal.AllocHGlobal(size);
+            IntPtr result = System.Runtime.InteropServices.Marshal.AllocHGlobal(size);
+            if (result.ToInt64() % alignment.ToInt64() != 0)
+            {
+                throw new Exception("Fatal allocation error");
+            }
+            return result;
         }
 
         static IntPtr Reallocation(IntPtr pUserData, IntPtr pOriginal, IntPtr size, IntPtr alignment, VkSystemAllocationScope allocationScope)

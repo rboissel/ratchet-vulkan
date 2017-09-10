@@ -10,32 +10,57 @@ namespace Ratchet.Drawing.Vulkan
     {
         internal IntPtr _Handle;
         VkPhysicalDevice _PhysicalDevice;
+        public VkPhysicalDevice PhysicalDevice { get { return _PhysicalDevice; } }
+
+        internal VkQueue[] _Queues;
+        public VkQueue[] Queues { get { return _Queues; } }
 
         internal delegate VkResult vkAllocateMemory_func(IntPtr deviceHandle, IntPtr pAllocateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pMemoryHandle);
         internal vkAllocateMemory_func vkAllocateMemory;
-        internal delegate VkResult vkCreateCommandPool_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pCommandPoolHandle);
+        internal delegate VkResult vkAllocateCommandBuffers_func(IntPtr deviceHandle, IntPtr pAllocateInfo, IntPtr pCommandBufferHandles);
+        internal vkAllocateCommandBuffers_func vkAllocateCommandBuffers;
+        internal delegate VkResult vkCreateCommandPool_func(IntPtr deviceHandle, IntPtr pAllocateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pCommandPoolHandle);
         internal vkCreateCommandPool_func vkCreateCommandPool;
         internal delegate VkResult vkCreateFence_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pFenceHandle);
         internal vkCreateFence_func vkCreateFence;
         internal delegate VkResult vkCreateRenderPass_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pRenderPassHandle);
         internal vkCreateRenderPass_func vkCreateRenderPass;
-        internal delegate VkResult vkGetFenceStatus_func(IntPtr deviceHandle, IntPtr fenceHandle);
+        internal delegate VkResult vkCreateSemaphore_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pSemaphoreHandle);
+        internal vkCreateSemaphore_func vkCreateSemaphore;
+        internal delegate VkResult vkGetFenceStatus_func(IntPtr deviceHandle, UInt64 fenceHandle);
         internal vkGetFenceStatus_func vkGetFenceStatus;
         internal delegate VkResult vkWaitForFences_func(IntPtr device, UInt32 fenceCount, IntPtr pFences, bool waitAll, UInt64 timeout);
         internal vkWaitForFences_func vkWaitForFences;
+        internal delegate void vkGetDeviceQueue_func(IntPtr device, UInt32 queueFamilyIndex, UInt32 queueIndex, ref IntPtr pQueue);
+        internal vkGetDeviceQueue_func vkGetDeviceQueue;
 
 
-
-        internal VkDevice(VkPhysicalDevice PhysicalDevice, IntPtr Handle)
+        internal VkDevice(VkPhysicalDevice PhysicalDevice, IntPtr Handle, VkDeviceQueueCreateInfo[] queueCreateInfo)
         {
             _PhysicalDevice = PhysicalDevice;
             _Handle = Handle;
             vkAllocateMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkAllocateMemory_func>("vkAllocateMemory");
+            vkAllocateCommandBuffers = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkAllocateCommandBuffers_func>("vkAllocateCommandBuffers");
             vkCreateCommandPool = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateCommandPool_func>("vkCreateCommandPool");
             vkCreateFence = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateFence_func>("vkCreateFence");
             vkCreateRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateRenderPass_func>("vkCreateRenderPass");
+            vkCreateSemaphore = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateSemaphore_func>("vkCreateSemaphore");
             vkGetFenceStatus = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetFenceStatus_func>("vkGetFenceStatus");
+            vkGetDeviceQueue = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetDeviceQueue_func>("vkGetDeviceQueue");
             vkWaitForFences = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkWaitForFences_func>("vkWaitForFences");
+
+            List<VkQueue> queues = new List<VkQueue>();
+            for (int n = 0; n< queueCreateInfo.Length; n++)
+            {
+                for (int x = 0; x < queueCreateInfo[n].queueCount; x++)
+                {
+                    IntPtr handle = new IntPtr(0);
+                    vkGetDeviceQueue(_Handle, queueCreateInfo[n].queueFamily.index, (UInt32)x, ref handle);
+                    VkQueue queue = new VkQueue(handle, this, queueCreateInfo[n].queueFamily);
+                    queues.Add(queue);
+                }
+            }
+            _Queues = queues.ToArray();
         }
 
         public unsafe VkDeviceMemory AllocateMemory(ref VkMemoryAllocateInfo allocateInfo)
@@ -67,7 +92,7 @@ namespace Ratchet.Drawing.Vulkan
 
         public unsafe VkCommandPool CreateCommandPool(ref VkCommandPoolCreateInfo commandPoolCreateInfo)
         {
-            IntPtr commandPoolHandle = new IntPtr(0);
+            UInt64 commandPoolHandle = 0;
             VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
             VkCommandPoolCreateInfo_Native commandPoolCreateInfo_native = new VkCommandPoolCreateInfo_Native();
             commandPoolCreateInfo_native.flags = commandPoolCreateInfo.flags;
@@ -82,17 +107,18 @@ namespace Ratchet.Drawing.Vulkan
             return VkCommandPool;
         }
 
-        public VkCommandPool CreateCommandPool(VkCommandPoolCreateFlag flags, UInt32 queueFamilyIndex)
+        public VkCommandPool CreateCommandPool(VkCommandPoolCreateFlag flags, ref VkQueueFamilyProperties queueFamily)
         {
+            if (_PhysicalDevice != queueFamily.physicalDevice) { throw new Exception("This queue family doesn't belong to the physical device used to create this device"); }
             VkCommandPoolCreateInfo commandPoolCreateInfo = new VkCommandPoolCreateInfo();
             commandPoolCreateInfo.flags = flags;
-            commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex;
+            commandPoolCreateInfo.queueFamilyIndex = queueFamily.index;
             return CreateCommandPool(ref commandPoolCreateInfo);
         }
 
         public unsafe VkFence CreateFence(ref VkFenceCreateInfo fenceCreateInfo)
         {
-            IntPtr fenceHandle = new IntPtr(0);
+            UInt64 fenceHandle = 0;
             VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
             VkFenceCreateInfo_Native fenceCreateInfo_native = new VkFenceCreateInfo_Native();
             fenceCreateInfo_native.flags = fenceCreateInfo.flags;
@@ -113,6 +139,28 @@ namespace Ratchet.Drawing.Vulkan
             return CreateFence(ref fenceCreateInfo);
         }
 
+        public unsafe VkSemaphore CreateSemaphore(ref VkSemaphoreCreateInfo semaphoreCreateInfo)
+        {
+            UInt64 semaphoreHandle = 0;
+            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+            VkSemaphoreCreateInfo_Native semaphoreCreateInfo_native = new VkSemaphoreCreateInfo_Native();
+            semaphoreCreateInfo_native.flags = semaphoreCreateInfo.flags;
+            semaphoreCreateInfo_native.sType = VkStructureType.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            semaphoreCreateInfo_native.pNext = new IntPtr(0);
+
+            VkResult result = vkCreateSemaphore(_Handle, new IntPtr(&semaphoreCreateInfo_native), ref allocator, new IntPtr(&semaphoreHandle));
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+
+            VkSemaphore semaphore = new VkSemaphore(this, semaphoreHandle);
+            return semaphore;
+        }
+
+        public VkSemaphore CreateSemaphore()
+        {
+            VkSemaphoreCreateInfo VkSemaphoreCreateInfo = new VkSemaphoreCreateInfo();
+            return CreateSemaphore(ref VkSemaphoreCreateInfo);
+        }
+
         public unsafe VkRenderPass CreateRenderPass(ref VkRenderPassCreateInfo renderPassCreateInfo)
         {
             for (int n = 0; n < renderPassCreateInfo.subpasses.Length; n++)
@@ -121,7 +169,7 @@ namespace Ratchet.Drawing.Vulkan
                 if (renderPassCreateInfo.subpasses[n].resolveAttachments != null && renderPassCreateInfo.subpasses[n].resolveAttachments.Length != renderPassCreateInfo.subpasses[n].colorAttachments.Length) { throw new Exception("Resolve Attachment must either be null or have the same length as Color Attachments"); }
             }
 
-            IntPtr renderPassHandle = new IntPtr(0);
+            UInt64 renderPassHandle =  0;
             VkRenderPassCreateInfo_Native renderPassCreateInfo_Native = new VkRenderPassCreateInfo_Native();
             renderPassCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
             renderPassCreateInfo_Native.pNext = new IntPtr(0);
@@ -236,10 +284,10 @@ namespace Ratchet.Drawing.Vulkan
 
         public unsafe bool WaitForFences(VkFence[] fences, bool waitAll, UInt64 timeout)
         {
-            IntPtr[] fencesHandles = new IntPtr[fences.Length];
+            UInt64[] fencesHandles = new UInt64[fences.Length];
             for (int n = 0; n < fences.Length; n++) { fencesHandles[n] = fences[n]._Handle; }
             VkResult result = VkResult.VK_SUCCESS;
-            fixed (IntPtr* pfencesHandles = &fencesHandles[0])
+            fixed (UInt64* pfencesHandles = &fencesHandles[0])
             {
                 result = vkWaitForFences(_Handle, (UInt32)fences.Length, new IntPtr(pfencesHandles), waitAll, timeout);
             }

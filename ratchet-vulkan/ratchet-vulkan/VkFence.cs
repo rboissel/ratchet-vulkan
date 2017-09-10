@@ -8,12 +8,12 @@ namespace Ratchet.Drawing.Vulkan
 {
     public class VkFence
     {
-        internal IntPtr _Handle;
+        internal UInt64 _Handle;
         VkDevice _Parent;
 
         public VkDevice Device { get { return _Parent; } }
 
-        internal VkFence(VkDevice Parent, IntPtr Handle)
+        internal VkFence(VkDevice Parent, UInt64 Handle)
         {
             _Handle = Handle;
             _Parent = Parent;
@@ -23,7 +23,7 @@ namespace Ratchet.Drawing.Vulkan
         public VkResult GetFenceStatus() { return _Parent.vkGetFenceStatus(_Parent._Handle, _Handle); }
         public unsafe bool WaitForFence(UInt64 timeout)
         {
-            fixed (IntPtr* pHandle = &_Handle)
+            fixed (UInt64* pHandle = &_Handle)
             {
                 VkResult result = _Parent.vkWaitForFences(_Parent._Handle, 1, new IntPtr(pHandle), true, timeout);
                 if (result == VkResult.VK_SUCCESS) { return true; }

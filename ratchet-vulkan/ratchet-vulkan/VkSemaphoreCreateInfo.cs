@@ -7,22 +7,22 @@ using System.Runtime.InteropServices;
 
 namespace Ratchet.Drawing.Vulkan
 {
-    [StructLayout(LayoutKind.Sequential)]
-    unsafe struct VkDeviceQueueCreateInfo_Native
+    public enum VkSemaphoreCreateFlag : UInt32
     {
-        public VkStructureType sType;
-        public IntPtr pNext;
-        public UInt32 flags;
-        public UInt32 queueFamilyIndex;
-        public UInt32 queueCount;
-        public float* pQueuePriorities;
+        NONE = 0x0,
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct VkDeviceQueueCreateInfo
+    struct VkSemaphoreCreateInfo_Native
     {
-        public VkQueueFamilyProperties queueFamily;
-        public UInt32 queueCount;
-        public float[] queuePriorities;
+        public VkStructureType sType;
+        public IntPtr pNext;
+        public VkSemaphoreCreateFlag flags;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct VkSemaphoreCreateInfo
+    {
+        public VkSemaphoreCreateFlag flags;
     }
 }

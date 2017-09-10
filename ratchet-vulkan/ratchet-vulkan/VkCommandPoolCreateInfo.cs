@@ -14,6 +14,7 @@ namespace Ratchet.Drawing.Vulkan
         VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER = 0x00000002,
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     public struct VkCommandPoolCreateInfo_Native
     {
         public VkStructureType sType;
@@ -22,6 +23,7 @@ namespace Ratchet.Drawing.Vulkan
         public UInt32 queueFamilyIndex;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     public struct VkCommandPoolCreateInfo
     {
         public VkCommandPoolCreateFlag flags;

@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace Ratchet.Drawing.Vulkan
 {
-    public class VkRenderPass
+    public class VkSemaphore
     {
         internal UInt64 _Handle;
         VkDevice _Parent;
 
         public VkDevice Device { get { return _Parent; } }
 
-        internal VkRenderPass(UInt64 Handle, VkDevice Parent)
+        internal VkSemaphore(VkDevice Parent, UInt64 Handle)
         {
-            _Parent = Parent;
             _Handle = Handle;
+            _Parent = Parent;
         }
     }
 }

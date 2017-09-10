@@ -30,9 +30,12 @@ namespace Triangle
             Ratchet.Drawing.Vulkan.VkDeviceCreateInfo DeviceCreateInfo = new Ratchet.Drawing.Vulkan.VkDeviceCreateInfo();
             DeviceCreateInfo.queueCreateInfos = new Ratchet.Drawing.Vulkan.VkDeviceQueueCreateInfo[]
             {
-                new Ratchet.Drawing.Vulkan.VkDeviceQueueCreateInfo() { queueCount = 1, queueFamilyIndex = 0, queuePriorities = new float[]{ 0.0f } }
+                new Ratchet.Drawing.Vulkan.VkDeviceQueueCreateInfo() { queueCount = 0x11, queueFamily = PhysicalDevices[0].QueueFamilies[1], queuePriorities = new float[]{ 0.0f } }
             };
             Ratchet.Drawing.Vulkan.VkDevice Device = PhysicalDevices[0].CreateDevice(ref DeviceCreateInfo);
+            
+            Ratchet.Drawing.Vulkan.VkCommandPool commandPool = Device.CreateCommandPool(Ratchet.Drawing.Vulkan.VkCommandPoolCreateFlag.NONE, ref Device.PhysicalDevice.QueueFamilies[1]);
+            commandPool.AllocateCommandBuffers(Ratchet.Drawing.Vulkan.VkCommandBufferLevel.VK_COMMAND_BUFFER_LEVEL_PRIMARY, 1);
             Application.Run(new Form1());
         }
     }

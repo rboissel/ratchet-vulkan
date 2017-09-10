@@ -16,11 +16,22 @@ namespace Ratchet.Drawing.Vulkan
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    internal struct VkQueueFamilyProperties_Native
+    {
+        public VkQueueFlags queueFlags;
+        public UInt32 queueCount;
+        public UInt32 timestampValidBits;
+        public VkExtent3D minImageTransferGranularity;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct VkQueueFamilyProperties
     {
         public VkQueueFlags queueFlags;
         public UInt32 queueCount;
         public UInt32 timestampValidBits;
         public VkExtent3D minImageTransferGranularity;
+        public UInt32 index;
+        internal VkPhysicalDevice physicalDevice;
     }
 }                                                                                                                                                                                                                                                                                                                                                                   
