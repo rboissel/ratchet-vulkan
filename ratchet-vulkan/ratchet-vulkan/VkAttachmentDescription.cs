@@ -31,7 +31,7 @@ namespace Ratchet.Drawing.Vulkan
     {
         public VkAttachmentDescriptionFlags flags;
         public VkFormat format;
-        public VkSampleCountFlagBits samples;
+        public VkSampleCountFlag samples;
         public VkAttachmentLoadOp loadOp;
         public VkAttachmentStoreOp storeOp;
         public VkAttachmentLoadOp stencilLoadOp;

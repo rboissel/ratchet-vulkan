@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ratchet.Drawing.Vulkan
 {
-    public enum VkSampleCountFlagBits : UInt32
+    public enum VkSampleCountFlag : UInt32
     {
         VK_SAMPLE_COUNT_1 = 0x00000001,
         VK_SAMPLE_COUNT_2 = 0x00000002,

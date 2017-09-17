@@ -19,10 +19,18 @@ namespace Ratchet.Drawing.Vulkan
         internal vkAllocateMemory_func vkAllocateMemory;
         internal delegate VkResult vkAllocateCommandBuffers_func(IntPtr deviceHandle, IntPtr pAllocateInfo, IntPtr pCommandBufferHandles);
         internal vkAllocateCommandBuffers_func vkAllocateCommandBuffers;
+        internal delegate VkResult vkCmdClearColorImage_Float_func(IntPtr commandBuffer, IntPtr image, VkImageLayout imageLayout, ref VkClearColorValue.Float pColor, UInt32 rangeCount, IntPtr pRanges);
+        internal vkCmdClearColorImage_Float_func vkCmdClearColorImage_Float;
+        internal delegate VkResult vkCmdClearColorImage_Int32_func(IntPtr commandBuffer, IntPtr image, VkImageLayout imageLayout, ref VkClearColorValue.Int32_t pColor, UInt32 rangeCount, IntPtr pRanges);
+        internal vkCmdClearColorImage_Int32_func vkCmdClearColorImage_Int32;
+        internal delegate VkResult vkCmdClearColorImage_UInt32_func(IntPtr commandBuffer, IntPtr image, VkImageLayout imageLayout, ref VkClearColorValue.UInt32_t pColor, UInt32 rangeCount, IntPtr pRanges);
+        internal vkCmdClearColorImage_UInt32_func vkCmdClearColorImage_UInt32;
         internal delegate VkResult vkCreateCommandPool_func(IntPtr deviceHandle, IntPtr pAllocateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pCommandPoolHandle);
         internal vkCreateCommandPool_func vkCreateCommandPool;
         internal delegate VkResult vkCreateFence_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pFenceHandle);
         internal vkCreateFence_func vkCreateFence;
+        internal delegate VkResult vkCreateImage_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pImageHandle);
+        internal vkCreateImage_func vkCreateImage;
         internal delegate VkResult vkCreateRenderPass_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pRenderPassHandle);
         internal vkCreateRenderPass_func vkCreateRenderPass;
         internal delegate VkResult vkCreateSemaphore_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pSemaphoreHandle);
@@ -41,8 +49,12 @@ namespace Ratchet.Drawing.Vulkan
             _Handle = Handle;
             vkAllocateMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkAllocateMemory_func>("vkAllocateMemory");
             vkAllocateCommandBuffers = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkAllocateCommandBuffers_func>("vkAllocateCommandBuffers");
+            vkCmdClearColorImage_Float = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Float_func>("vkCmdClearColorImage");
+            vkCmdClearColorImage_Int32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Int32_func>("vkCmdClearColorImage");
+            vkCmdClearColorImage_UInt32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_UInt32_func>("vkCmdClearColorImage");
             vkCreateCommandPool = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateCommandPool_func>("vkCreateCommandPool");
             vkCreateFence = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateFence_func>("vkCreateFence");
+            vkCreateImage = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateImage_func>("vkCreateImage");
             vkCreateRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateRenderPass_func>("vkCreateRenderPass");
             vkCreateSemaphore = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateSemaphore_func>("vkCreateSemaphore");
             vkGetFenceStatus = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetFenceStatus_func>("vkGetFenceStatus");
@@ -161,9 +173,72 @@ namespace Ratchet.Drawing.Vulkan
             return CreateSemaphore(ref VkSemaphoreCreateInfo);
         }
 
-        public VkImage CreateImage()
+        public unsafe VkImage CreateImage(ref VkImageCreateInfo imageCreateInfo)
         {
+            IntPtr imageHandle = new IntPtr(0);
 
+            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+
+            VkImageCreateInfo_Native imageCreateInfo_Native = new VkImageCreateInfo_Native();
+            imageCreateInfo_Native.pNext = new IntPtr(0);
+            imageCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            imageCreateInfo_Native.usage = imageCreateInfo.usage;
+            imageCreateInfo_Native.tiling = imageCreateInfo.tiling;
+            imageCreateInfo_Native.sharingMode = imageCreateInfo.sharingMode;
+            imageCreateInfo_Native.samples = imageCreateInfo.samples;
+            if (imageCreateInfo.queueFamilies == null || imageCreateInfo.queueFamilies.Length == 0)
+            {
+                imageCreateInfo_Native.queueFamilyIndexCount = 0;
+                imageCreateInfo_Native.pQueueFamilyIndices = new IntPtr(0);
+            }
+            else
+            {
+                imageCreateInfo_Native.queueFamilyIndexCount = (uint)imageCreateInfo.queueFamilies.Length;
+                imageCreateInfo_Native.pQueueFamilyIndices = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(imageCreateInfo_Native.queueFamilyIndexCount * sizeof(UInt32)));
+                for (int n = 0; n < imageCreateInfo_Native.queueFamilyIndexCount; n++) { ((uint*)imageCreateInfo_Native.pQueueFamilyIndices.ToPointer())[n] = imageCreateInfo.queueFamilies[n].index; }
+            }
+            imageCreateInfo_Native.mipLevels = imageCreateInfo.mipLevels;
+            imageCreateInfo_Native.initialLayout = imageCreateInfo.initialLayout;
+            imageCreateInfo_Native.imageType = imageCreateInfo.imageType;
+            imageCreateInfo_Native.format = imageCreateInfo.format;
+            imageCreateInfo_Native.flags = imageCreateInfo.flags;
+            imageCreateInfo_Native.extent = imageCreateInfo.extent;
+            imageCreateInfo_Native.arrayLayers = imageCreateInfo.arrayLayers;
+
+            VkResult result = vkCreateImage(_Handle, new IntPtr(&imageCreateInfo_Native), ref allocator, new IntPtr(&imageHandle));
+
+
+            if (imageCreateInfo.queueFamilies != null && imageCreateInfo.queueFamilies.Length != 0)
+            {
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(imageCreateInfo_Native.pQueueFamilyIndices);
+            }
+
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+
+            return new VkImage(imageHandle, this);
+        }
+
+        public unsafe VkImage CreateImage(VkImageCreateFlag flags, VkImageType imageType, VkFormat format, VkExtent3D extent, int mipLevel, int arrayLayers, VkSampleCountFlag samples, VkImageTiling tiling, VkImageUsageFlag usage, VkSharingMode sharingMode, VkQueueFamilyProperties[] queueFamilies, VkImageLayout initialLayout)
+        {
+            VkImageCreateInfo imageCreateInfo = new VkImageCreateInfo();
+            imageCreateInfo.flags = flags;
+            imageCreateInfo.imageType = imageType;
+            imageCreateInfo.format = format;
+            imageCreateInfo.extent = extent;
+            imageCreateInfo.mipLevels = (uint)mipLevel;
+            imageCreateInfo.arrayLayers = (uint)arrayLayers;
+            imageCreateInfo.samples = samples;
+            imageCreateInfo.tiling = tiling;
+            imageCreateInfo.usage = usage;
+            imageCreateInfo.sharingMode = sharingMode;
+            imageCreateInfo.queueFamilies = queueFamilies;
+            imageCreateInfo.initialLayout = initialLayout;
+            return CreateImage(ref imageCreateInfo);
+        }
+
+        public unsafe VkImage CreateImage(VkImageCreateFlag flags, VkFormat format, int width, int height, int mipLevel, int arrayLayers, VkSampleCountFlag samples, VkImageTiling tiling, VkImageUsageFlag usage, VkSharingMode sharingMode, VkQueueFamilyProperties[] queueFamilies, VkImageLayout initialLayout)
+        {
+            return CreateImage(flags, VkImageType.VK_IMAGE_TYPE_2D, format, new VkExtent3D() { width = (uint)width, height = (uint)height, depth = 1 }, mipLevel, arrayLayers, samples, tiling, usage, sharingMode, queueFamilies, initialLayout);
         }
 
         public unsafe VkRenderPass CreateRenderPass(ref VkRenderPassCreateInfo renderPassCreateInfo)

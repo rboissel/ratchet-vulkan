@@ -49,6 +49,15 @@ namespace Triangle
             Ratchet.Drawing.Vulkan.VkCommandPool commandPool = device.CreateCommandPool(Ratchet.Drawing.Vulkan.VkCommandPoolCreateFlag.NONE, ref graphicsQueueFamily);
             Ratchet.Drawing.Vulkan.VkCommandBuffer commandBuffer = commandPool.AllocateCommandBuffer(Ratchet.Drawing.Vulkan.VkCommandBufferLevel.VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
+            Ratchet.Drawing.Vulkan.VkImage image = device.CreateImage(
+                0,
+                Ratchet.Drawing.Vulkan.VkFormat.VK_FORMAT_A8B8G8R8_UINT_PACK32,
+                256, 256,
+                1, 1,
+                Ratchet.Drawing.Vulkan.VkSampleCountFlag.VK_SAMPLE_COUNT_1,
+                Ratchet.Drawing.Vulkan.VkImageTiling.VK_IMAGE_TILING_LINEAR,
+                Ratchet.Drawing.Vulkan.VkImageUsageFlag.VK_IMAGE_USAGE_TRANSFER_SRC | Ratchet.Drawing.Vulkan.VkImageUsageFlag.VK_IMAGE_USAGE_TRANSFER_DST, Ratchet.Drawing.Vulkan.VkSharingMode.VK_SHARING_MODE_EXCLUSIVE, null, Ratchet.Drawing.Vulkan.VkImageLayout.VK_IMAGE_LAYOUT_UNDEFINED);
+
             Ratchet.Drawing.Vulkan.VkRenderPass renderPass = device.CreateRenderPass(
                 new Ratchet.Drawing.Vulkan.VkAttachmentDescription[]
                 {

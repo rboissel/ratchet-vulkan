@@ -9,6 +9,7 @@ namespace Ratchet.Drawing.Vulkan
 {
     public enum VkImageCreateFlag : UInt32
     {
+        NONE = 0x00000000,
         VK_IMAGE_CREATE_SPARSE_BINDING = 0x00000001,
         VK_IMAGE_CREATE_SPARSE_RESIDENCY = 0x00000002,
         VK_IMAGE_CREATE_SPARSE_ALIASED = 0x00000004,
@@ -19,37 +20,37 @@ namespace Ratchet.Drawing.Vulkan
     [StructLayout(LayoutKind.Sequential)]
     struct VkImageCreateInfo_Native
     {
-        VkStructureType sType;
-        IntPtr pNext;
-        VkImageCreateFlag flags;
-        VkImageType imageType;
-        VkFormat format;
-        VkExtent3D extent;
-        UInt32 mipLevels;
-        UInt32 arrayLayers;
-        VkSampleCountFlagBits samples;
-        VkImageTiling tiling;
-        VkImageUsageFlag usage;
-        VkSharingMode sharingMode;
-        UInt32 queueFamilyIndexCount;
-        IntPtr pQueueFamilyIndices;
-        VkImageLayout initialLayout;
+        public VkStructureType sType;
+        public IntPtr pNext;
+        public VkImageCreateFlag flags;
+        public VkImageType imageType;
+        public VkFormat format;
+        public VkExtent3D extent;
+        public UInt32 mipLevels;
+        public UInt32 arrayLayers;
+        public VkSampleCountFlag samples;
+        public VkImageTiling tiling;
+        public VkImageUsageFlag usage;
+        public VkSharingMode sharingMode;
+        public UInt32 queueFamilyIndexCount;
+        public IntPtr pQueueFamilyIndices;
+        public VkImageLayout initialLayout;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct VkImageCreateInfo
     {
-        VkImageCreateFlag flags;
-        VkImageType imageType;
-        VkFormat format;
-        VkExtent3D extent;
-        UInt32 mipLevels;
-        UInt32 arrayLayers;
-        VkSampleCountFlagBits samples;
-        VkImageTiling tiling;
-        VkImageUsageFlag usage;
-        VkSharingMode sharingMode;
-        VkQueueFamilyProperties[] queueFamilyIndices;
-        VkImageLayout initialLayout;
+        public VkImageCreateFlag flags;
+        public VkImageType imageType;
+        public VkFormat format;
+        public VkExtent3D extent;
+        public UInt32 mipLevels;
+        public UInt32 arrayLayers;
+        public VkSampleCountFlag samples;
+        public VkImageTiling tiling;
+        public VkImageUsageFlag usage;
+        public VkSharingMode sharingMode;
+        public VkQueueFamilyProperties[] queueFamilies;
+        public VkImageLayout initialLayout;
     }
 }
