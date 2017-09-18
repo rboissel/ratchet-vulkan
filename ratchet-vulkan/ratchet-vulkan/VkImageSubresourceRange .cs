@@ -10,10 +10,10 @@ namespace Ratchet.Drawing.Vulkan
     [StructLayout(LayoutKind.Sequential)]
     public struct VkImageSubresourceRange
     {
-        VkImageAspectFlag aspectMask;
-        UInt32 baseMipLevel;
-        UInt32 levelCount;
-        UInt32 baseArrayLayer;
-        UInt32 layerCount;
+        public VkImageAspectFlag aspectMask;
+        public UInt32 baseMipLevel;
+        public UInt32 levelCount;
+        public UInt32 baseArrayLayer;
+        public UInt32 layerCount;
     }
 }

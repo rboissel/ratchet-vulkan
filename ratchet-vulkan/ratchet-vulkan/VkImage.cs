@@ -8,13 +8,13 @@ namespace Ratchet.Drawing.Vulkan
 {
     public class VkImage
     {
-        internal IntPtr _Handle;
+        internal UInt64 _Handle;
         VkDevice _Parent;
 
         public VkDevice Device { get { return _Parent; } }
 
 
-        internal VkImage(IntPtr Handle, VkDevice Parent)
+        internal VkImage(UInt64 Handle, VkDevice Parent)
         {
             _Parent = Parent;
             _Handle = Handle;

@@ -19,11 +19,13 @@ namespace Ratchet.Drawing.Vulkan
         internal vkAllocateMemory_func vkAllocateMemory;
         internal delegate VkResult vkAllocateCommandBuffers_func(IntPtr deviceHandle, IntPtr pAllocateInfo, IntPtr pCommandBufferHandles);
         internal vkAllocateCommandBuffers_func vkAllocateCommandBuffers;
-        internal delegate VkResult vkCmdClearColorImage_Float_func(IntPtr commandBuffer, IntPtr image, VkImageLayout imageLayout, ref VkClearColorValue.Float pColor, UInt32 rangeCount, IntPtr pRanges);
+        internal delegate VkResult vkBeginCommandBuffer_func(IntPtr commandBufferHandle, IntPtr pBeginInfo);
+        internal vkBeginCommandBuffer_func vkBeginCommandBuffer;
+        internal delegate VkResult vkCmdClearColorImage_Float_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearColorValue.Float pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_Float_func vkCmdClearColorImage_Float;
-        internal delegate VkResult vkCmdClearColorImage_Int32_func(IntPtr commandBuffer, IntPtr image, VkImageLayout imageLayout, ref VkClearColorValue.Int32_t pColor, UInt32 rangeCount, IntPtr pRanges);
+        internal delegate VkResult vkCmdClearColorImage_Int32_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearColorValue.Int32_t pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_Int32_func vkCmdClearColorImage_Int32;
-        internal delegate VkResult vkCmdClearColorImage_UInt32_func(IntPtr commandBuffer, IntPtr image, VkImageLayout imageLayout, ref VkClearColorValue.UInt32_t pColor, UInt32 rangeCount, IntPtr pRanges);
+        internal delegate VkResult vkCmdClearColorImage_UInt32_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearColorValue.UInt32_t pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_UInt32_func vkCmdClearColorImage_UInt32;
         internal delegate VkResult vkCreateCommandPool_func(IntPtr deviceHandle, IntPtr pAllocateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pCommandPoolHandle);
         internal vkCreateCommandPool_func vkCreateCommandPool;
@@ -37,6 +39,10 @@ namespace Ratchet.Drawing.Vulkan
         internal vkCreateSemaphore_func vkCreateSemaphore;
         internal delegate VkResult vkGetFenceStatus_func(IntPtr deviceHandle, UInt64 fenceHandle);
         internal vkGetFenceStatus_func vkGetFenceStatus;
+        internal delegate VkResult vkEndCommandBuffer_func(IntPtr commandBufferHandle);
+        internal vkEndCommandBuffer_func vkEndCommandBuffer;
+        internal delegate VkResult vkQueueSubmit_func(IntPtr queueHandle, UInt32 submitCount, IntPtr pSubmits, UInt64 fenceHandle);
+        internal vkQueueSubmit_func vkQueueSubmit;
         internal delegate VkResult vkWaitForFences_func(IntPtr device, UInt32 fenceCount, IntPtr pFences, bool waitAll, UInt64 timeout);
         internal vkWaitForFences_func vkWaitForFences;
         internal delegate void vkGetDeviceQueue_func(IntPtr device, UInt32 queueFamilyIndex, UInt32 queueIndex, ref IntPtr pQueue);
@@ -49,6 +55,7 @@ namespace Ratchet.Drawing.Vulkan
             _Handle = Handle;
             vkAllocateMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkAllocateMemory_func>("vkAllocateMemory");
             vkAllocateCommandBuffers = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkAllocateCommandBuffers_func>("vkAllocateCommandBuffers");
+            vkBeginCommandBuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkBeginCommandBuffer_func>("vkBeginCommandBuffer");
             vkCmdClearColorImage_Float = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Float_func>("vkCmdClearColorImage");
             vkCmdClearColorImage_Int32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Int32_func>("vkCmdClearColorImage");
             vkCmdClearColorImage_UInt32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_UInt32_func>("vkCmdClearColorImage");
@@ -57,8 +64,10 @@ namespace Ratchet.Drawing.Vulkan
             vkCreateImage = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateImage_func>("vkCreateImage");
             vkCreateRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateRenderPass_func>("vkCreateRenderPass");
             vkCreateSemaphore = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateSemaphore_func>("vkCreateSemaphore");
+            vkEndCommandBuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkEndCommandBuffer_func>("vkEndCommandBuffer");
             vkGetFenceStatus = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetFenceStatus_func>("vkGetFenceStatus");
             vkGetDeviceQueue = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetDeviceQueue_func>("vkGetDeviceQueue");
+            vkQueueSubmit = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkQueueSubmit_func>("vkQueueSubmit");
             vkWaitForFences = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkWaitForFences_func>("vkWaitForFences");
 
             List<VkQueue> queues = new List<VkQueue>();
@@ -175,7 +184,7 @@ namespace Ratchet.Drawing.Vulkan
 
         public unsafe VkImage CreateImage(ref VkImageCreateInfo imageCreateInfo)
         {
-            IntPtr imageHandle = new IntPtr(0);
+            UInt64 imageHandle = 0;
 
             VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
 

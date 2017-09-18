@@ -19,7 +19,7 @@ namespace Ratchet.Drawing.Vulkan
             _Handle = Handle;
         }
 
-        public void Begin(ref VkCommandBufferBeginInfo CommandBufferBeginInfo)
+        public unsafe void Begin(ref VkCommandBufferBeginInfo CommandBufferBeginInfo)
         {
             VkCommandBufferBeginInfo_Native commandBufferBeginInfo_Native = new VkCommandBufferBeginInfo_Native();
             commandBufferBeginInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -34,15 +34,36 @@ namespace Ratchet.Drawing.Vulkan
                 commandBufferBeginInfo_Native.pInheritanceInfo = new IntPtr(0);
             }
 
+            VkResult result =  _Parent.Device.vkBeginCommandBuffer(_Handle, new IntPtr(&commandBufferBeginInfo_Native));
 
+            if (CommandBufferBeginInfo.inheritanceInfo != null)
+            {
+
+            }
+
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
         }
 
-        public void Begin(VkCommandBufferUsageFlag Flags, VkCommandBufferInheritanceInfo InheritanceInfo)
+        public void Begin(VkCommandBufferUsageFlag Flags, ref VkCommandBufferInheritanceInfo InheritanceInfo)
         {
             VkCommandBufferBeginInfo CommandBufferBeginInfo = new VkCommandBufferBeginInfo();
             CommandBufferBeginInfo.flags = Flags;
             CommandBufferBeginInfo.inheritanceInfo = InheritanceInfo;
             Begin(ref CommandBufferBeginInfo);
+        }
+
+        public void Begin(VkCommandBufferUsageFlag Flags)
+        {
+            VkCommandBufferBeginInfo CommandBufferBeginInfo = new VkCommandBufferBeginInfo();
+            CommandBufferBeginInfo.flags = Flags;
+            CommandBufferBeginInfo.inheritanceInfo = null;
+            Begin(ref CommandBufferBeginInfo);
+        }
+
+        public void End()
+        {
+            VkResult result = _Parent.Device.vkEndCommandBuffer(_Handle);
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
         }
 
         public unsafe void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, ref VkClearColorValue.Float color, VkImageSubresourceRange[] Ranges)
@@ -69,6 +90,7 @@ namespace Ratchet.Drawing.Vulkan
         public void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, float R, float G, float B, float A, VkImageSubresourceRange[] Ranges)
         {
             VkClearColorValue.Float color = new VkClearColorValue.Float();
+            color.float32 = new float[4];
             color.float32[0] = R;
             color.float32[1] = G;
             color.float32[2] = B;
@@ -79,6 +101,7 @@ namespace Ratchet.Drawing.Vulkan
         public void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, int R, int G, int B, int A, VkImageSubresourceRange[] Ranges)
         {
             VkClearColorValue.Int32_t color = new VkClearColorValue.Int32_t();
+            color.int32 = new int[4];
             color.int32[0] = R;
             color.int32[1] = G;
             color.int32[2] = B;
@@ -89,6 +112,7 @@ namespace Ratchet.Drawing.Vulkan
         public void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, uint R, uint G, uint B, uint A, VkImageSubresourceRange[] Ranges)
         {
             VkClearColorValue.UInt32_t color = new VkClearColorValue.UInt32_t();
+            color.uint32 = new uint[4];
             color.uint32[0] = R;
             color.uint32[1] = G;
             color.uint32[2] = B;

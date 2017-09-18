@@ -48,7 +48,7 @@ namespace Triangle
             
             Ratchet.Drawing.Vulkan.VkCommandPool commandPool = device.CreateCommandPool(Ratchet.Drawing.Vulkan.VkCommandPoolCreateFlag.NONE, ref graphicsQueueFamily);
             Ratchet.Drawing.Vulkan.VkCommandBuffer commandBuffer = commandPool.AllocateCommandBuffer(Ratchet.Drawing.Vulkan.VkCommandBufferLevel.VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-
+            commandBuffer.Begin(Ratchet.Drawing.Vulkan.VkCommandBufferUsageFlag.NONE);
             Ratchet.Drawing.Vulkan.VkImage image = device.CreateImage(
                 0,
                 Ratchet.Drawing.Vulkan.VkFormat.VK_FORMAT_A8B8G8R8_UINT_PACK32,
@@ -57,6 +57,17 @@ namespace Triangle
                 Ratchet.Drawing.Vulkan.VkSampleCountFlag.VK_SAMPLE_COUNT_1,
                 Ratchet.Drawing.Vulkan.VkImageTiling.VK_IMAGE_TILING_LINEAR,
                 Ratchet.Drawing.Vulkan.VkImageUsageFlag.VK_IMAGE_USAGE_TRANSFER_SRC | Ratchet.Drawing.Vulkan.VkImageUsageFlag.VK_IMAGE_USAGE_TRANSFER_DST, Ratchet.Drawing.Vulkan.VkSharingMode.VK_SHARING_MODE_EXCLUSIVE, null, Ratchet.Drawing.Vulkan.VkImageLayout.VK_IMAGE_LAYOUT_UNDEFINED);
+            commandBuffer.CmdClearColorImage(image, Ratchet.Drawing.Vulkan.VkImageLayout.VK_IMAGE_LAYOUT_UNDEFINED, 0.0f, 1.0f, 0.0f, 1.0f, new Ratchet.Drawing.Vulkan.VkImageSubresourceRange[] { new Ratchet.Drawing.Vulkan.VkImageSubresourceRange() { aspectMask = Ratchet.Drawing.Vulkan.VkImageAspectFlag.NONE, baseArrayLayer = 1, baseMipLevel = 1, layerCount = 1, levelCount = 1 } });
+            commandBuffer.End();
+            Ratchet.Drawing.Vulkan.VkFence fence = device.CreateFence(0);
+
+            device.Queues[0].Submit(new Ratchet.Drawing.Vulkan.VkSubmitInfo[] { new Ratchet.Drawing.Vulkan.VkSubmitInfo()
+            {
+                commandBuffers = new Ratchet.Drawing.Vulkan.VkCommandBuffer[] { commandBuffer }
+            } },
+            fence
+            );
+            fence.WaitForFence(100000000000);
 
             Ratchet.Drawing.Vulkan.VkRenderPass renderPass = device.CreateRenderPass(
                 new Ratchet.Drawing.Vulkan.VkAttachmentDescription[]

@@ -10,23 +10,23 @@ namespace Ratchet.Drawing.Vulkan
     [StructLayout(LayoutKind.Sequential)]
     struct VkSubmitInfo_Native
     {
-        VkStructureType sType;
-        IntPtr pNext;
-        UInt32 waitSemaphoreCount;
-        IntPtr pWaitSemaphores;
-        IntPtr pWaitDstStageMask;
-        UInt32 commandBufferCount;
-        IntPtr pCommandBuffers;
-        UInt32 signalSemaphoreCount;
-        IntPtr pSignalSemaphores;
+        public VkStructureType sType;
+        public IntPtr pNext;
+        public UInt32 waitSemaphoreCount;
+        public IntPtr pWaitSemaphores;
+        public IntPtr pWaitDstStageMask;
+        public UInt32 commandBufferCount;
+        public IntPtr pCommandBuffers;
+        public UInt32 signalSemaphoreCount;
+        public IntPtr pSignalSemaphores;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct VkSubmitInfo
     {
-        VkSemaphore[] waitSemaphores;
-        VkPipelineStageFlag[] waitDstStageMask;
-        VkCommandBuffer[] commandBuffers;
-        VkSemaphore[] signalSemaphores;
+        public VkSemaphore[] waitSemaphores;
+        public VkPipelineStageFlag[] waitDstStageMask;
+        public VkCommandBuffer[] commandBuffers;
+        public VkSemaphore[] signalSemaphores;
     }
 }
