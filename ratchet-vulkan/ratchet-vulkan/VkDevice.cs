@@ -21,26 +21,40 @@ namespace Ratchet.Drawing.Vulkan
         internal vkAllocateCommandBuffers_func vkAllocateCommandBuffers;
         internal delegate VkResult vkBeginCommandBuffer_func(IntPtr commandBufferHandle, IntPtr pBeginInfo);
         internal vkBeginCommandBuffer_func vkBeginCommandBuffer;
-        internal delegate VkResult vkCmdClearColorImage_Float_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearColorValue.Float pColor, UInt32 rangeCount, IntPtr pRanges);
+        internal delegate VkResult vkBindImageMemory_func(IntPtr deviceHandle, UInt64 imageHandle, UInt64 memoryHandle, UInt64 memoryOffset);
+        internal vkBindImageMemory_func vkBindImageMemory;
+        internal delegate VkResult vkCmdClearColorImage_Float_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearValue.VkClearColorValue.Float_s pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_Float_func vkCmdClearColorImage_Float;
-        internal delegate VkResult vkCmdClearColorImage_Int32_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearColorValue.Int32_t pColor, UInt32 rangeCount, IntPtr pRanges);
+        internal delegate VkResult vkCmdClearColorImage_Int32_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearValue.VkClearColorValue.Int32_t_s pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_Int32_func vkCmdClearColorImage_Int32;
-        internal delegate VkResult vkCmdClearColorImage_UInt32_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearColorValue.UInt32_t pColor, UInt32 rangeCount, IntPtr pRanges);
+        internal delegate VkResult vkCmdClearColorImage_UInt32_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearValue.VkClearColorValue.UInt32_t_s pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_UInt32_func vkCmdClearColorImage_UInt32;
+        internal delegate VkResult vkCmdBeginRenderPass_func(IntPtr commandBuffer, IntPtr pRenderPassBegin, VkSubpassContents contents);
+        internal vkCmdBeginRenderPass_func vkCmdBeginRenderPass;
+        internal delegate VkResult vkCmdEndRenderPass_func(IntPtr commandBuffer);
+        internal vkCmdEndRenderPass_func vkCmdEndRenderPass;
         internal delegate VkResult vkCreateCommandPool_func(IntPtr deviceHandle, IntPtr pAllocateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pCommandPoolHandle);
         internal vkCreateCommandPool_func vkCreateCommandPool;
         internal delegate VkResult vkCreateFence_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pFenceHandle);
         internal vkCreateFence_func vkCreateFence;
+        internal delegate VkResult vkCreateFramebuffer_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pFramebufferHandle);
+        internal vkCreateFramebuffer_func vkCreateFramebuffer;
+        internal delegate VkResult vkCreateImageView_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pImageBufferHandle);
+        internal vkCreateImageView_func vkCreateImageView;
         internal delegate VkResult vkCreateImage_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pImageHandle);
         internal vkCreateImage_func vkCreateImage;
         internal delegate VkResult vkCreateRenderPass_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pRenderPassHandle);
         internal vkCreateRenderPass_func vkCreateRenderPass;
         internal delegate VkResult vkCreateSemaphore_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pSemaphoreHandle);
         internal vkCreateSemaphore_func vkCreateSemaphore;
-        internal delegate VkResult vkGetFenceStatus_func(IntPtr deviceHandle, UInt64 fenceHandle);
-        internal vkGetFenceStatus_func vkGetFenceStatus;
         internal delegate VkResult vkEndCommandBuffer_func(IntPtr commandBufferHandle);
         internal vkEndCommandBuffer_func vkEndCommandBuffer;
+        internal delegate VkResult vkGetFenceStatus_func(IntPtr deviceHandle, UInt64 fenceHandle);
+        internal vkGetFenceStatus_func vkGetFenceStatus;
+        internal delegate VkResult vkGetImageMemoryRequirements_func(IntPtr deviceHandle, UInt64 imageHandle, IntPtr pMemoryRequirements);
+        internal vkGetImageMemoryRequirements_func vkGetImageMemoryRequirements;
+        internal delegate VkResult vkMapMemory_func(IntPtr deviceHandle, UInt64 memory, UInt64 offset, UInt64 size, VkMemoryMapFlag flags, IntPtr ppData);
+        internal vkMapMemory_func vkMapMemory;
         internal delegate VkResult vkQueueSubmit_func(IntPtr queueHandle, UInt32 submitCount, IntPtr pSubmits, UInt64 fenceHandle);
         internal vkQueueSubmit_func vkQueueSubmit;
         internal delegate VkResult vkWaitForFences_func(IntPtr device, UInt32 fenceCount, IntPtr pFences, bool waitAll, UInt64 timeout);
@@ -56,17 +70,24 @@ namespace Ratchet.Drawing.Vulkan
             vkAllocateMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkAllocateMemory_func>("vkAllocateMemory");
             vkAllocateCommandBuffers = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkAllocateCommandBuffers_func>("vkAllocateCommandBuffers");
             vkBeginCommandBuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkBeginCommandBuffer_func>("vkBeginCommandBuffer");
+            vkBindImageMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkBindImageMemory_func>("vkBindImageMemory");
+            vkCmdBeginRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdBeginRenderPass_func>("vkCmdBeginRenderPass");
             vkCmdClearColorImage_Float = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Float_func>("vkCmdClearColorImage");
             vkCmdClearColorImage_Int32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Int32_func>("vkCmdClearColorImage");
             vkCmdClearColorImage_UInt32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_UInt32_func>("vkCmdClearColorImage");
+            vkCmdEndRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdEndRenderPass_func>("vkCmdEndRenderPass");
             vkCreateCommandPool = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateCommandPool_func>("vkCreateCommandPool");
             vkCreateFence = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateFence_func>("vkCreateFence");
+            vkCreateFramebuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateFramebuffer_func>("vkCreateFramebuffer");
             vkCreateImage = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateImage_func>("vkCreateImage");
+            vkCreateImageView = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateImageView_func>("vkCreateImageView");
             vkCreateRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateRenderPass_func>("vkCreateRenderPass");
             vkCreateSemaphore = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateSemaphore_func>("vkCreateSemaphore");
             vkEndCommandBuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkEndCommandBuffer_func>("vkEndCommandBuffer");
             vkGetFenceStatus = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetFenceStatus_func>("vkGetFenceStatus");
             vkGetDeviceQueue = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetDeviceQueue_func>("vkGetDeviceQueue");
+            vkGetImageMemoryRequirements = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetImageMemoryRequirements_func>("vkGetImageMemoryRequirements");
+            vkMapMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkMapMemory_func>("vkMapMemory");
             vkQueueSubmit = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkQueueSubmit_func>("vkQueueSubmit");
             vkWaitForFences = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkWaitForFences_func>("vkWaitForFences");
 
@@ -88,26 +109,26 @@ namespace Ratchet.Drawing.Vulkan
         {
             if (vkAllocateMemory != null)
             {
-                VkDeviceMemory deviceMemory = new VkDeviceMemory();
+                UInt64 deviceMemoryHandle = 0;
                 VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
                 VkMemoryAllocateInfo_Native allocateInfo_native = new VkMemoryAllocateInfo_Native();
                 allocateInfo_native.allocationSize = allocateInfo.allocationSize;
-                allocateInfo_native.memoryTypeIndex = allocateInfo.memoryTypeIndex;
+                allocateInfo_native.memoryTypeIndex = (uint)allocateInfo.memoryType.index;
                 allocateInfo_native.sType = VkStructureType.VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
                 allocateInfo_native.pNext = new IntPtr(0);
-                VkResult result = vkAllocateMemory(_Handle, new IntPtr(&allocateInfo_native), ref allocator, new IntPtr(&deviceMemory.Handle));
+                VkResult result = vkAllocateMemory(_Handle, new IntPtr(&allocateInfo_native), ref allocator, new IntPtr(&deviceMemoryHandle));
                 if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
-
+                VkDeviceMemory deviceMemory = new VkDeviceMemory(deviceMemoryHandle, this);
                 return deviceMemory;
             }
             else { throw new NotImplementedException(); }
         }
 
-        public VkDeviceMemory AllocateMemory(ulong allocationSize, uint memoryTypeIndex)
+        public VkDeviceMemory AllocateMemory(ulong allocationSize, ref VkMemoryType memoryType)
         {
             VkMemoryAllocateInfo allocateInfo = new VkMemoryAllocateInfo();
             allocateInfo.allocationSize = allocationSize;
-            allocateInfo.memoryTypeIndex = memoryTypeIndex;
+            allocateInfo.memoryType = memoryType;
             return AllocateMemory(ref allocateInfo);
         }
 
@@ -160,13 +181,93 @@ namespace Ratchet.Drawing.Vulkan
             return CreateFence(ref fenceCreateInfo);
         }
 
+        public unsafe VkFramebuffer CreateFramebuffer(ref VkFramebufferCreateInfo framebufferCreateInfo)
+        {
+            if (framebufferCreateInfo.attachments == null || framebufferCreateInfo.attachments.Length == 0) { throw new Exception("There must be at least one attachement"); }
+            if (framebufferCreateInfo.width > 0) { throw new Exception("width must be greater than 0"); }
+            if (framebufferCreateInfo.height > 0) { throw new Exception("height must be greater than 0"); }
+            if (framebufferCreateInfo.layers > 0) { throw new Exception("layers must be greater than 0"); }
+
+            UInt64 framebufferHandle = 0;
+            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+
+            VkFramebufferCreateInfo_Native framebufferCreateInfo_native = new VkFramebufferCreateInfo_Native();
+            framebufferCreateInfo_native.pNext = new IntPtr(0);
+            framebufferCreateInfo_native.sType = VkStructureType.VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+            framebufferCreateInfo_native.flags = VkFramebufferCreateFlag.NONE;
+            framebufferCreateInfo_native.width = framebufferCreateInfo.width;
+            framebufferCreateInfo_native.height = framebufferCreateInfo.height;
+            framebufferCreateInfo_native.layers = framebufferCreateInfo.layers;
+            framebufferCreateInfo_native.renderPass = framebufferCreateInfo.renderPass._Handle;
+            framebufferCreateInfo_native.attachmentCount = (uint)framebufferCreateInfo.attachments.Length;
+
+            UInt64[] attachments = new UInt64[framebufferCreateInfo_native.attachmentCount];
+            for (int n = 0; n < attachments.Length; n++) { attachments[n] = framebufferCreateInfo.attachments[n]._Handle; }
+
+            VkResult result;
+            fixed (UInt64* pAttachments = &attachments[0])
+            {
+                framebufferCreateInfo_native.pAttachments = new IntPtr(pAttachments);
+                result = vkCreateFramebuffer(_Handle, new IntPtr(&framebufferCreateInfo_native), ref allocator, new IntPtr(&framebufferHandle));
+            }
+
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+
+            return new VkFramebuffer(framebufferHandle, this);
+        }
+
+        public VkFramebuffer CreateFramebuffer(VkRenderPass renderPass, VkImageView[] attachments, UInt32 width, UInt32 height, UInt32 layers)
+        {
+            VkFramebufferCreateInfo framebufferCreateInfo = new VkFramebufferCreateInfo();
+            framebufferCreateInfo.renderPass = renderPass;
+            framebufferCreateInfo.width = width;
+            framebufferCreateInfo.height = height;
+            framebufferCreateInfo.layers = layers;
+            framebufferCreateInfo.attachments = attachments;
+            return CreateFramebuffer(ref framebufferCreateInfo);
+        }
+
+        public unsafe VkImageView CreateImageView(ref VkImageViewCreateInfo createImageViewInfo)
+        {
+            UInt64 imageViewHandle = 0;
+            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+
+            VkImageViewCreateInfo_Native createImageViewInfo_native = new VkImageViewCreateInfo_Native();
+            createImageViewInfo_native.pNext = new IntPtr(0);
+            createImageViewInfo_native.sType = VkStructureType.VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            createImageViewInfo_native.components = createImageViewInfo.components;
+            createImageViewInfo_native.flags = VkImageViewCreateFlags.NONE;
+            createImageViewInfo_native.format = createImageViewInfo.format;
+            createImageViewInfo_native.image = createImageViewInfo.image._Handle;
+            createImageViewInfo_native.subresourceRange = createImageViewInfo.subresourceRange;
+            createImageViewInfo_native.viewType = createImageViewInfo.viewType;
+
+            VkResult result = vkCreateImageView(_Handle, new IntPtr(&createImageViewInfo_native), ref allocator, new IntPtr(&imageViewHandle));
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+
+            return new VkImageView(imageViewHandle, this);
+        }
+
+        public VkImageView CreateImageView(VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping components, VkImageSubresourceRange subresourceRange)
+        {
+
+            VkImageViewCreateInfo createImageViewInfo = new VkImageViewCreateInfo();
+            createImageViewInfo.image = image;
+            createImageViewInfo.viewType = viewType;
+            createImageViewInfo.format = format;
+            createImageViewInfo.components = components;
+            createImageViewInfo.subresourceRange = subresourceRange;
+
+            return CreateImageView(ref createImageViewInfo);
+        }
+
         public unsafe VkSemaphore CreateSemaphore(ref VkSemaphoreCreateInfo semaphoreCreateInfo)
         {
             UInt64 semaphoreHandle = 0;
             VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
             VkSemaphoreCreateInfo_Native semaphoreCreateInfo_native = new VkSemaphoreCreateInfo_Native();
             semaphoreCreateInfo_native.flags = semaphoreCreateInfo.flags;
-            semaphoreCreateInfo_native.sType = VkStructureType.VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+            semaphoreCreateInfo_native.sType = VkStructureType.VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
             semaphoreCreateInfo_native.pNext = new IntPtr(0);
 
             VkResult result = vkCreateSemaphore(_Handle, new IntPtr(&semaphoreCreateInfo_native), ref allocator, new IntPtr(&semaphoreHandle));
@@ -277,19 +378,31 @@ namespace Ratchet.Drawing.Vulkan
             {
                 subpasses_native[n].pipelineBindPoint = subpasses[n].pipelineBindPoint;
 
-                subpasses_native[n].colorAttachmentCount = (UInt32)subpasses[n].colorAttachments.Length;
-                subpasses_native[n].inputAttachmentCount = (UInt32)subpasses[n].inputAttachments.Length;
+                if (subpasses[n].colorAttachments == null) { subpasses_native[n].colorAttachmentCount = 0; }
+                else { subpasses_native[n].colorAttachmentCount = (UInt32)subpasses[n].colorAttachments.Length; }
 
-                subpasses_native[n].pColorAttachments = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(VkAttachmentReference) * subpasses_native[n].colorAttachmentCount));
-                for (int x = 0; x < subpasses_native[n].colorAttachmentCount; x++)
+                if (subpasses[n].inputAttachments == null) { subpasses_native[n].inputAttachmentCount = 0; }
+                else { subpasses_native[n].inputAttachmentCount = (UInt32)subpasses[n].inputAttachments.Length; }
+
+                if (subpasses_native[n].colorAttachmentCount != 0)
                 {
-                    ((VkAttachmentReference*)subpasses_native[n].pColorAttachments.ToPointer())[x] = subpasses[n].colorAttachments[x];
+                    subpasses_native[n].pColorAttachments = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(VkAttachmentReference) * subpasses_native[n].colorAttachmentCount));
+                    for (int x = 0; x < subpasses_native[n].colorAttachmentCount; x++)
+                    {
+                        ((VkAttachmentReference*)subpasses_native[n].pColorAttachments.ToPointer())[x] = subpasses[n].colorAttachments[x];
+                    }
                 }
-                subpasses_native[n].pInputAttachments = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(VkAttachmentReference) * subpasses_native[n].inputAttachmentCount));
-                for (int x = 0; x < subpasses_native[n].inputAttachmentCount; x++)
+                else { subpasses_native[n].pColorAttachments = new IntPtr(0); }
+
+                if (subpasses_native[n].inputAttachmentCount != 0)
                 {
-                    ((VkAttachmentReference*)subpasses_native[n].pInputAttachments.ToPointer())[x] = subpasses[n].inputAttachments[x];
+                    subpasses_native[n].pInputAttachments = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(VkAttachmentReference) * subpasses_native[n].inputAttachmentCount));
+                    for (int x = 0; x < subpasses_native[n].inputAttachmentCount; x++)
+                    {
+                        ((VkAttachmentReference*)subpasses_native[n].pInputAttachments.ToPointer())[x] = subpasses[n].inputAttachments[x];
+                    }
                 }
+                else { subpasses_native[n].pInputAttachments = new IntPtr(0); }
 
                 if (subpasses[n].depthStencilAttachment == null) { subpasses_native[n].pDepthStencilAttachment = new IntPtr(0); }
                 else

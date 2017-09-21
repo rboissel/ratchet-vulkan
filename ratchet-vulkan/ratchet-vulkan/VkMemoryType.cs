@@ -17,9 +17,17 @@ namespace Ratchet.Drawing.Vulkan
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    struct VkMemoryType_Native
+    {
+        public VkMemoryPropertyFlags propertyFlags;
+        public UInt32 heapIndex;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct VkMemoryType
     {
         public VkMemoryPropertyFlags propertyFlags;
         public UInt32 heapIndex;
+        internal int index;
     }
 }

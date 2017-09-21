@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 namespace Ratchet.Drawing.Vulkan
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct VkAttachmentReference
+    public struct VkOffset2D
     {
-        public UInt32 attachment;
-        public VkImageLayout layout;
+        public Int32 x;
+        public Int32 y;
     }
 }

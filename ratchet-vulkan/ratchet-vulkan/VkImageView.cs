@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Ratchet.Drawing.Vulkan
 {
-    public class VkFramebuffer
+    public class VkImageView
     {
         internal UInt64 _Handle;
         VkDevice _Parent;
 
         public VkDevice Device { get { return _Parent; } }
 
-        internal VkFramebuffer(UInt64 Handle, VkDevice Parent)
+        internal VkImageView(UInt64 Handle, VkDevice Parent)
         {
             _Parent = Parent;
             _Handle = Handle;

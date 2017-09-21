@@ -8,18 +8,18 @@ using System.Runtime.InteropServices;
 namespace Ratchet.Drawing.Vulkan
 {
     [StructLayout(LayoutKind.Sequential)]
-    struct VkMemoryAllocateInfo_Native
+    struct VkMemoryRequirements_Native
     {
-        public VkStructureType sType;
-        public IntPtr pNext;
-        public UInt64 allocationSize;
-        public UInt32 memoryTypeIndex;
+        public UInt64 size;
+        public  UInt64 alignment;
+        public UInt32 memoryTypeBits;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct VkMemoryAllocateInfo
+    public struct VkMemoryRequirements
     {
-        public UInt64 allocationSize;
-        public VkMemoryType memoryType;
+        public UInt64 size;
+        public UInt64 alignment;
+        public VkMemoryType[] memoryTypes;
     }
 }

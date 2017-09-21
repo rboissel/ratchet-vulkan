@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using Ratchet.Drawing.Vulkan;
+
 namespace Triangle
 {
     static class Program
@@ -16,21 +18,21 @@ namespace Triangle
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Ratchet.Drawing.Vulkan.VkInstanceCreateInfo InstanceCreateInfo = new Ratchet.Drawing.Vulkan.VkInstanceCreateInfo();
+            VkInstanceCreateInfo InstanceCreateInfo = new VkInstanceCreateInfo();
             InstanceCreateInfo.applicationInfo.apiVersion = 0;
             InstanceCreateInfo.applicationInfo.applicationName = "myApp";
             InstanceCreateInfo.applicationInfo.applicationVersion = 1;
             InstanceCreateInfo.applicationInfo.engineName = "Ratchet";
             InstanceCreateInfo.applicationInfo.engineVersion = 1;
-            Ratchet.Drawing.Vulkan.VkInstance Instance = new Ratchet.Drawing.Vulkan.VkInstance(ref InstanceCreateInfo);
-            Ratchet.Drawing.Vulkan.VkPhysicalDevice physicalDevice = null;
-            Ratchet.Drawing.Vulkan.VkQueueFamilyProperties graphicsQueueFamily = new Ratchet.Drawing.Vulkan.VkQueueFamilyProperties();
+            VkInstance Instance = new VkInstance(ref InstanceCreateInfo);
+            VkPhysicalDevice physicalDevice = null;
+            VkQueueFamilyProperties graphicsQueueFamily = new VkQueueFamilyProperties();
 
-            foreach (Ratchet.Drawing.Vulkan.VkPhysicalDevice physicalDeviceIt in Instance.vkEnumeratePhysicalDevices())
+            foreach (VkPhysicalDevice physicalDeviceIt in Instance.vkEnumeratePhysicalDevices())
             {
-                foreach (Ratchet.Drawing.Vulkan.VkQueueFamilyProperties QueueFamilyPropertyIt in physicalDeviceIt.QueueFamilies)
+                foreach (VkQueueFamilyProperties QueueFamilyPropertyIt in physicalDeviceIt.QueueFamilies)
                 {
-                    if ((QueueFamilyPropertyIt.queueFlags & Ratchet.Drawing.Vulkan.VkQueueFlags.VK_QUEUE_GRAPHICS) != 0)
+                    if ((QueueFamilyPropertyIt.queueFlags & VkQueueFlags.VK_QUEUE_GRAPHICS) != 0)
                     {
                         physicalDevice = physicalDeviceIt;
                         graphicsQueueFamily = QueueFamilyPropertyIt;
@@ -39,46 +41,75 @@ namespace Triangle
                 }
             }
 
-            Ratchet.Drawing.Vulkan.VkDeviceCreateInfo DeviceCreateInfo = new Ratchet.Drawing.Vulkan.VkDeviceCreateInfo();
-            DeviceCreateInfo.queueCreateInfos = new Ratchet.Drawing.Vulkan.VkDeviceQueueCreateInfo[]
+            VkDeviceCreateInfo DeviceCreateInfo = new VkDeviceCreateInfo();
+            DeviceCreateInfo.queueCreateInfos = new VkDeviceQueueCreateInfo[]
             {
-                new Ratchet.Drawing.Vulkan.VkDeviceQueueCreateInfo() { queueCount = 0x1, queueFamily = graphicsQueueFamily, queuePriorities = new float[]{ 1.0f } }
+                new VkDeviceQueueCreateInfo() { queueCount = 0x1, queueFamily = graphicsQueueFamily, queuePriorities = new float[]{ 1.0f } }
             };
-            Ratchet.Drawing.Vulkan.VkDevice device = physicalDevice.CreateDevice(ref DeviceCreateInfo);
-            
-            Ratchet.Drawing.Vulkan.VkCommandPool commandPool = device.CreateCommandPool(Ratchet.Drawing.Vulkan.VkCommandPoolCreateFlag.NONE, ref graphicsQueueFamily);
-            Ratchet.Drawing.Vulkan.VkCommandBuffer commandBuffer = commandPool.AllocateCommandBuffer(Ratchet.Drawing.Vulkan.VkCommandBufferLevel.VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-            commandBuffer.Begin(Ratchet.Drawing.Vulkan.VkCommandBufferUsageFlag.NONE);
-            Ratchet.Drawing.Vulkan.VkImage image = device.CreateImage(
+            VkDevice device = physicalDevice.CreateDevice(ref DeviceCreateInfo);
+            VkMemoryType hostMemory = new VkMemoryType();
+            for (int n = 0; n < device.PhysicalDevice.Memories.memoryTypes.Length; n++)
+            {
+                if ((device.PhysicalDevice.Memories.memoryTypes[n].propertyFlags & VkMemoryPropertyFlags.VK_MEMORY_PROPERTY_HOST_VISIBLE) != 0)
+                { hostMemory = device.PhysicalDevice.Memories.memoryTypes[n];  }
+            }
+
+
+            VkCommandPool commandPool = device.CreateCommandPool(VkCommandPoolCreateFlag.NONE, ref graphicsQueueFamily);
+            VkCommandBuffer commandBuffer = commandPool.AllocateCommandBuffer(VkCommandBufferLevel.VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+            commandBuffer.Begin(VkCommandBufferUsageFlag.NONE);
+            VkImage image = device.CreateImage(
                 0,
-                Ratchet.Drawing.Vulkan.VkFormat.VK_FORMAT_A8B8G8R8_UINT_PACK32,
+                VkFormat.VK_FORMAT_A8B8G8R8_UINT_PACK32,
                 256, 256,
                 1, 1,
-                Ratchet.Drawing.Vulkan.VkSampleCountFlag.VK_SAMPLE_COUNT_1,
-                Ratchet.Drawing.Vulkan.VkImageTiling.VK_IMAGE_TILING_LINEAR,
-                Ratchet.Drawing.Vulkan.VkImageUsageFlag.VK_IMAGE_USAGE_TRANSFER_SRC | Ratchet.Drawing.Vulkan.VkImageUsageFlag.VK_IMAGE_USAGE_TRANSFER_DST, Ratchet.Drawing.Vulkan.VkSharingMode.VK_SHARING_MODE_EXCLUSIVE, null, Ratchet.Drawing.Vulkan.VkImageLayout.VK_IMAGE_LAYOUT_UNDEFINED);
-            commandBuffer.CmdClearColorImage(image, Ratchet.Drawing.Vulkan.VkImageLayout.VK_IMAGE_LAYOUT_UNDEFINED, 0.0f, 1.0f, 0.0f, 1.0f, new Ratchet.Drawing.Vulkan.VkImageSubresourceRange[] { new Ratchet.Drawing.Vulkan.VkImageSubresourceRange() { aspectMask = Ratchet.Drawing.Vulkan.VkImageAspectFlag.NONE, baseArrayLayer = 1, baseMipLevel = 1, layerCount = 1, levelCount = 1 } });
-            commandBuffer.End();
-            Ratchet.Drawing.Vulkan.VkFence fence = device.CreateFence(0);
+                VkSampleCountFlag.VK_SAMPLE_COUNT_1,
+                VkImageTiling.VK_IMAGE_TILING_LINEAR,
+                VkImageUsageFlag.VK_IMAGE_USAGE_TRANSFER_SRC | VkImageUsageFlag.VK_IMAGE_USAGE_TRANSFER_DST, VkSharingMode.VK_SHARING_MODE_EXCLUSIVE, null, VkImageLayout.VK_IMAGE_LAYOUT_GENERAL);
+            VkDeviceMemory memoryBlock = device.AllocateMemory(image.MemoryRequirements.size, ref hostMemory);
+            image.BindMemory(memoryBlock, 0);
 
-            device.Queues[0].Submit(new Ratchet.Drawing.Vulkan.VkSubmitInfo[] { new Ratchet.Drawing.Vulkan.VkSubmitInfo()
+            VkRenderPass renderPass = device.CreateRenderPass(
+            new VkAttachmentDescription[]
             {
-                commandBuffers = new Ratchet.Drawing.Vulkan.VkCommandBuffer[] { commandBuffer }
+                new VkAttachmentDescription()
+                {
+                    samples = VkSampleCountFlag.VK_SAMPLE_COUNT_1,
+                    loadOp = VkAttachmentLoadOp.VK_ATTACHMENT_LOAD_OP_CLEAR,
+                    storeOp = VkAttachmentStoreOp.VK_ATTACHMENT_STORE_OP_STORE,
+                    stencilLoadOp = VkAttachmentLoadOp.VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+                    stencilStoreOp = VkAttachmentStoreOp.VK_ATTACHMENT_STORE_OP_DONT_CARE,
+                    format = VkFormat.VK_FORMAT_A8B8G8R8_UINT_PACK32,
+                    initialLayout = VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                    finalLayout = VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                }
+            },
+            new VkSubpassDescription[]
+            {
+                new VkSubpassDescription()
+                {
+                    pipelineBindPoint = VkPipelineBindPoint.VK_PIPELINE_BIND_POINT_GRAPHICS,
+                    colorAttachments = new VkAttachmentReference[] { new VkAttachmentReference() { attachment = 0, layout = VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL  } }
+                }
+            }, null);
+
+            commandBuffer.CmdClearColorImage(image, VkImageLayout.VK_IMAGE_LAYOUT_GENERAL, 1.0f, 1.0f, 0.0f, 1.0f, new VkImageSubresourceRange[] { new VkImageSubresourceRange() { aspectMask = VkImageAspectFlag.VK_IMAGE_ASPECT_COLOR_BIT, baseArrayLayer = 0, baseMipLevel = 0, layerCount = 1, levelCount = 1 } });
+            commandBuffer.CmdBeginRenderPass(renderPass, new VkRect2D(0, 0, 128, 128), null, null, VkSubpassContents.VK_SUBPASS_CONTENTS_INLINE);
+            commandBuffer.CmdEndRenderPass();
+            commandBuffer.End();
+
+            VkFence fence = device.CreateFence(0);
+            VkSemaphore semaphore = device.CreateSemaphore();
+            device.Queues[0].Submit(new VkSubmitInfo[] { new VkSubmitInfo()
+            {
+                commandBuffers = new VkCommandBuffer[] { commandBuffer },
+                signalSemaphores = new VkSemaphore[] { semaphore }
             } },
             fence
             );
             fence.WaitForFence(100000000000);
 
-            Ratchet.Drawing.Vulkan.VkRenderPass renderPass = device.CreateRenderPass(
-                new Ratchet.Drawing.Vulkan.VkAttachmentDescription[]
-                {
-                },
-                new Ratchet.Drawing.Vulkan.VkSubpassDescription[]
-                {
-                },
-                new Ratchet.Drawing.Vulkan.VkSubpassDependency[]
-                {
-                });
+            IntPtr map = memoryBlock.Map(0, image.MemoryRequirements.size, VkMemoryMapFlag.NONE);
 
             Application.Run(new Form1());
         }

@@ -34,7 +34,7 @@ namespace Ratchet.Drawing.Vulkan
                 commandBufferBeginInfo_Native.pInheritanceInfo = new IntPtr(0);
             }
 
-            VkResult result =  _Parent.Device.vkBeginCommandBuffer(_Handle, new IntPtr(&commandBufferBeginInfo_Native));
+            VkResult result = _Parent.Device.vkBeginCommandBuffer(_Handle, new IntPtr(&commandBufferBeginInfo_Native));
 
             if (CommandBufferBeginInfo.inheritanceInfo != null)
             {
@@ -66,30 +66,39 @@ namespace Ratchet.Drawing.Vulkan
             if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
         }
 
-        public unsafe void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, ref VkClearColorValue.Float color, VkImageSubresourceRange[] Ranges)
+        public unsafe void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, ref VkClearValue.VkClearColorValue.Float color, VkImageSubresourceRange[] Ranges)
         {
+            VkClearValue.VkClearColorValue.Float_s color_native = new VkClearValue.VkClearColorValue.Float_s();
+            color_native.float32 = color.float32;
+
             if (Ranges == null || Ranges.Length == 0) { throw new Exception("There must be at least one range"); }
             fixed (VkImageSubresourceRange* pRange = &Ranges[0])
-            { _Parent.Device.vkCmdClearColorImage_Float(_Handle, Image._Handle, ImageLayout, ref color, (uint)Ranges.Length, new IntPtr(pRange)); }
+            { _Parent.Device.vkCmdClearColorImage_Float(_Handle, Image._Handle, ImageLayout, ref color_native, (uint)Ranges.Length, new IntPtr(pRange)); }
         }
 
-        public unsafe void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, ref VkClearColorValue.Int32_t color, VkImageSubresourceRange[] Ranges)
+        public unsafe void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, ref VkClearValue.VkClearColorValue.Int32_t color, VkImageSubresourceRange[] Ranges)
         {
+            VkClearValue.VkClearColorValue.Int32_t_s color_native = new VkClearValue.VkClearColorValue.Int32_t_s();
+            color_native.int32 = color.int32;
+
             if (Ranges == null || Ranges.Length == 0) { throw new Exception("There must be at least one range"); }
             fixed (VkImageSubresourceRange* pRange = &Ranges[0])
-            { _Parent.Device.vkCmdClearColorImage_Int32(_Handle, Image._Handle, ImageLayout, ref color, (uint)Ranges.Length, new IntPtr(pRange)); }
+            { _Parent.Device.vkCmdClearColorImage_Int32(_Handle, Image._Handle, ImageLayout, ref color_native, (uint)Ranges.Length, new IntPtr(pRange)); }
         }
 
-        public unsafe void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, ref VkClearColorValue.UInt32_t color, VkImageSubresourceRange[] Ranges)
+        public unsafe void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, ref VkClearValue.VkClearColorValue.UInt32_t color, VkImageSubresourceRange[] Ranges)
         {
+            VkClearValue.VkClearColorValue.UInt32_t_s color_native = new VkClearValue.VkClearColorValue.UInt32_t_s();
+            color_native.uint32 = color.uint32;
+
             if (Ranges == null || Ranges.Length == 0) { throw new Exception("There must be at least one range"); }
             fixed (VkImageSubresourceRange* pRange = &Ranges[0])
-            { _Parent.Device.vkCmdClearColorImage_UInt32(_Handle, Image._Handle, ImageLayout, ref color, (uint)Ranges.Length, new IntPtr(pRange)); }
+            { _Parent.Device.vkCmdClearColorImage_UInt32(_Handle, Image._Handle, ImageLayout, ref color_native, (uint)Ranges.Length, new IntPtr(pRange)); }
         }
 
         public void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, float R, float G, float B, float A, VkImageSubresourceRange[] Ranges)
         {
-            VkClearColorValue.Float color = new VkClearColorValue.Float();
+            VkClearValue.VkClearColorValue.Float color = new VkClearValue.VkClearColorValue.Float();
             color.float32 = new float[4];
             color.float32[0] = R;
             color.float32[1] = G;
@@ -100,7 +109,7 @@ namespace Ratchet.Drawing.Vulkan
 
         public void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, int R, int G, int B, int A, VkImageSubresourceRange[] Ranges)
         {
-            VkClearColorValue.Int32_t color = new VkClearColorValue.Int32_t();
+            VkClearValue.VkClearColorValue.Int32_t color = new VkClearValue.VkClearColorValue.Int32_t();
             color.int32 = new int[4];
             color.int32[0] = R;
             color.int32[1] = G;
@@ -111,13 +120,88 @@ namespace Ratchet.Drawing.Vulkan
 
         public void CmdClearColorImage(VkImage Image, VkImageLayout ImageLayout, uint R, uint G, uint B, uint A, VkImageSubresourceRange[] Ranges)
         {
-            VkClearColorValue.UInt32_t color = new VkClearColorValue.UInt32_t();
+            VkClearValue.VkClearColorValue.UInt32_t color = new VkClearValue.VkClearColorValue.UInt32_t();
             color.uint32 = new uint[4];
             color.uint32[0] = R;
             color.uint32[1] = G;
             color.uint32[2] = B;
             color.uint32[3] = A;
             CmdClearColorImage(Image, ImageLayout, ref color, Ranges);
+        }
+
+        public unsafe void CmdBeginRenderPass(ref VkRenderPassBeginInfo renderPassBegin, VkSubpassContents contents)
+        {
+            VkRenderPassBeginInfo_Native renderPassBegin_native = new VkRenderPassBeginInfo_Native();
+            renderPassBegin_native.pNext = new IntPtr(0);
+            renderPassBegin_native.sType = VkStructureType.VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            if (renderPassBegin.clearValues == null || renderPassBegin.clearValues.Length == 0) { renderPassBegin_native.clearValueCount = 0; }
+            else
+            {
+                renderPassBegin_native.clearValueCount = (uint)renderPassBegin.clearValues.Length;
+                renderPassBegin_native.pClearValues = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(UInt32) * 4 * renderPassBegin_native.clearValueCount));
+            }
+            renderPassBegin_native.framebufferHandle = renderPassBegin.framebuffer._Handle;
+            renderPassBegin_native.renderArea = renderPassBegin.renderArea;
+            renderPassBegin_native.renderPassHandle = renderPassBegin.renderPass._Handle;
+
+            for (int n = 0; n < renderPassBegin_native.clearValueCount; n++)
+            {
+                if (renderPassBegin.clearValues[n] is VkClearValue.VkClearColorValue.Float)
+                {
+                    VkClearValue.VkClearColorValue.Float value = renderPassBegin.clearValues[n] as VkClearValue.VkClearColorValue.Float;
+                    float* pValue = ((float*)(renderPassBegin_native.pClearValues.ToPointer()) + (n * 4));
+                    pValue[0] = value.float32[0];
+                    pValue[1] = value.float32[1];
+                    pValue[2] = value.float32[2];
+                    pValue[3] = value.float32[3];
+                }
+                else if (renderPassBegin.clearValues[n] is VkClearValue.VkClearColorValue.Int32_t)
+                {
+                    VkClearValue.VkClearColorValue.Int32_t value = renderPassBegin.clearValues[n] as VkClearValue.VkClearColorValue.Int32_t;
+                    Int32* pValue = ((Int32*)(renderPassBegin_native.pClearValues.ToPointer()) + (n * 4));
+                    pValue[0] = value.int32[0];
+                    pValue[1] = value.int32[1];
+                    pValue[2] = value.int32[2];
+                    pValue[3] = value.int32[3];
+                }
+                else if (renderPassBegin.clearValues[n] is VkClearValue.VkClearColorValue.UInt32_t)
+                {
+                    VkClearValue.VkClearColorValue.UInt32_t value = renderPassBegin.clearValues[n] as VkClearValue.VkClearColorValue.UInt32_t;
+                    UInt32* pValue = ((UInt32*)(renderPassBegin_native.pClearValues.ToPointer()) + (n * 4));
+                    pValue[0] = value.uint32[0];
+                    pValue[1] = value.uint32[1];
+                    pValue[2] = value.uint32[2];
+                    pValue[3] = value.uint32[3];
+                }
+                else if (renderPassBegin.clearValues[n] is VkClearValue.VkClearDepthStencilValue.VkClearDepthStencilValue)
+                {
+                    VkClearValue.VkClearDepthStencilValue.VkClearDepthStencilValue value = renderPassBegin.clearValues[n] as VkClearValue.VkClearDepthStencilValue.VkClearDepthStencilValue;
+                    *((float*)(renderPassBegin_native.pClearValues.ToPointer()) + (n * 4)) = value.depth;
+                    *((UInt32*)(renderPassBegin_native.pClearValues.ToPointer()) + (n * 4 + 1)) = value.stencil;
+                }
+            }
+
+            VkResult result = _Parent.Device.vkCmdBeginRenderPass(_Handle, new IntPtr(&renderPassBegin_native), contents);
+
+            System.Runtime.InteropServices.Marshal.FreeHGlobal(renderPassBegin_native.pClearValues);
+
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+        }
+
+        public unsafe void CmdBeginRenderPass(VkRenderPass renderPass, VkRect2D renderArea, VkFramebuffer frameBuffer, VkClearValue[] clearValues, VkSubpassContents contents)
+        {
+            VkRenderPassBeginInfo renderPassBegin = new VkRenderPassBeginInfo();
+            renderPassBegin.renderPass = renderPass;
+            renderPassBegin.renderArea = renderArea;
+            renderPassBegin.framebuffer = frameBuffer;
+            renderPassBegin.clearValues = clearValues;
+            CmdBeginRenderPass(ref renderPassBegin, contents);
+        }
+
+        public void CmdEndRenderPass()
+        {
+            VkResult result = _Parent.Device.vkCmdEndRenderPass(_Handle);
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
         }
     }
 }

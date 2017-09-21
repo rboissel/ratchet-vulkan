@@ -39,7 +39,7 @@ namespace Ratchet.Drawing.Vulkan
             properties.memoryHeaps = new VkMemoryHeap[properties_native.memoryHeapCount];
             properties.memoryTypes = new VkMemoryType[properties_native.memoryTypeCount];
             for (int n = 0; n < properties.memoryHeaps.Length; n++) { properties.memoryHeaps[n] = properties_native.memoryHeaps[n]; }
-            for (int n = 0; n < properties.memoryTypes.Length; n++) { properties.memoryTypes[n] = properties_native.memoryTypes[n]; }
+            for (int n = 0; n < properties.memoryTypes.Length; n++) { properties.memoryTypes[n] = new VkMemoryType() { heapIndex = properties_native.memoryTypes[n].heapIndex, propertyFlags = properties_native.memoryTypes[n].propertyFlags, index = n }; }
             return properties;
         }
 
