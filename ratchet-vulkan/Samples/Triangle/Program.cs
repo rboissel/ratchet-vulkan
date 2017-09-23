@@ -93,8 +93,10 @@ namespace Triangle
                 }
             }, null);
 
-            commandBuffer.CmdClearColorImage(image, VkImageLayout.VK_IMAGE_LAYOUT_GENERAL, 1.0f, 1.0f, 0.0f, 1.0f, new VkImageSubresourceRange[] { new VkImageSubresourceRange() { aspectMask = VkImageAspectFlag.VK_IMAGE_ASPECT_COLOR_BIT, baseArrayLayer = 0, baseMipLevel = 0, layerCount = 1, levelCount = 1 } });
-            commandBuffer.CmdBeginRenderPass(renderPass, new VkRect2D(0, 0, 128, 128), null, null, VkSubpassContents.VK_SUBPASS_CONTENTS_INLINE);
+            VkImageView imageView = device.CreateImageView(image, VkImageViewType.VK_IMAGE_VIEW_TYPE_2D, VkFormat.VK_FORMAT_A8B8G8R8_UINT_PACK32, new VkComponentMapping() { a = VkComponentSwizzle.VK_COMPONENT_SWIZZLE_IDENTITY, b = VkComponentSwizzle.VK_COMPONENT_SWIZZLE_IDENTITY, g = VkComponentSwizzle.VK_COMPONENT_SWIZZLE_IDENTITY, r = VkComponentSwizzle.VK_COMPONENT_SWIZZLE_IDENTITY }, new VkImageSubresourceRange() { levelCount = 1, layerCount = 1, baseMipLevel = 0, baseArrayLayer = 0, aspectMask = VkImageAspectFlag.VK_IMAGE_ASPECT_COLOR_BIT });
+            VkFramebuffer frameBuffer = device.CreateFramebuffer(renderPass, new VkImageView[] { imageView }, 256, 256, 1);
+            //commandBuffer.CmdClearColorImage(image, VkImageLayout.VK_IMAGE_LAYOUT_GENERAL, 1.0f, 1.0f, 0.0f, 1.0f, new VkImageSubresourceRange[] { new VkImageSubresourceRange() { aspectMask = VkImageAspectFlag.VK_IMAGE_ASPECT_COLOR_BIT, baseArrayLayer = 0, baseMipLevel = 0, layerCount = 1, levelCount = 1 } });
+            commandBuffer.CmdBeginRenderPass(renderPass, new VkRect2D(0, 0, 256, 256), frameBuffer, new VkClearValue[] { new VkClearValue.VkClearColorValue.Float() {  float32 = new float[] { 1.0f, 0.0f, 0.0f, 1.0f } } }, VkSubpassContents.VK_SUBPASS_CONTENTS_INLINE);
             commandBuffer.CmdEndRenderPass();
             commandBuffer.End();
 

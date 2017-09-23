@@ -29,9 +29,9 @@ namespace Ratchet.Drawing.Vulkan
         internal vkCmdClearColorImage_Int32_func vkCmdClearColorImage_Int32;
         internal delegate VkResult vkCmdClearColorImage_UInt32_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearValue.VkClearColorValue.UInt32_t_s pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_UInt32_func vkCmdClearColorImage_UInt32;
-        internal delegate VkResult vkCmdBeginRenderPass_func(IntPtr commandBuffer, IntPtr pRenderPassBegin, VkSubpassContents contents);
+        internal delegate void vkCmdBeginRenderPass_func(IntPtr commandBuffer, IntPtr pRenderPassBegin, VkSubpassContents contents);
         internal vkCmdBeginRenderPass_func vkCmdBeginRenderPass;
-        internal delegate VkResult vkCmdEndRenderPass_func(IntPtr commandBuffer);
+        internal delegate void vkCmdEndRenderPass_func(IntPtr commandBuffer);
         internal vkCmdEndRenderPass_func vkCmdEndRenderPass;
         internal delegate VkResult vkCreateCommandPool_func(IntPtr deviceHandle, IntPtr pAllocateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pCommandPoolHandle);
         internal vkCreateCommandPool_func vkCreateCommandPool;
@@ -184,9 +184,9 @@ namespace Ratchet.Drawing.Vulkan
         public unsafe VkFramebuffer CreateFramebuffer(ref VkFramebufferCreateInfo framebufferCreateInfo)
         {
             if (framebufferCreateInfo.attachments == null || framebufferCreateInfo.attachments.Length == 0) { throw new Exception("There must be at least one attachement"); }
-            if (framebufferCreateInfo.width > 0) { throw new Exception("width must be greater than 0"); }
-            if (framebufferCreateInfo.height > 0) { throw new Exception("height must be greater than 0"); }
-            if (framebufferCreateInfo.layers > 0) { throw new Exception("layers must be greater than 0"); }
+            if (framebufferCreateInfo.width == 0) { throw new Exception("width must be greater than 0"); }
+            if (framebufferCreateInfo.height == 0) { throw new Exception("height must be greater than 0"); }
+            if (framebufferCreateInfo.layers == 0) { throw new Exception("layers must be greater than 0"); }
 
             UInt64 framebufferHandle = 0;
             VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();

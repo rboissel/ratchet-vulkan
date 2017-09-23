@@ -181,11 +181,10 @@ namespace Ratchet.Drawing.Vulkan
                 }
             }
 
-            VkResult result = _Parent.Device.vkCmdBeginRenderPass(_Handle, new IntPtr(&renderPassBegin_native), contents);
+            _Parent.Device.vkCmdBeginRenderPass(_Handle, new IntPtr(&renderPassBegin_native), contents);
 
             System.Runtime.InteropServices.Marshal.FreeHGlobal(renderPassBegin_native.pClearValues);
 
-            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
         }
 
         public unsafe void CmdBeginRenderPass(VkRenderPass renderPass, VkRect2D renderArea, VkFramebuffer frameBuffer, VkClearValue[] clearValues, VkSubpassContents contents)
@@ -200,8 +199,7 @@ namespace Ratchet.Drawing.Vulkan
 
         public void CmdEndRenderPass()
         {
-            VkResult result = _Parent.Device.vkCmdEndRenderPass(_Handle);
-            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+            _Parent.Device.vkCmdEndRenderPass(_Handle);
         }
     }
 }

@@ -20,9 +20,9 @@ namespace Ratchet.Drawing.Vulkan
     [StructLayout(LayoutKind.Sequential)]
     public struct VkComponentMapping
     {
-        VkComponentSwizzle r;
-        VkComponentSwizzle g;
-        VkComponentSwizzle b;
-        VkComponentSwizzle a;
+        public VkComponentSwizzle r;
+        public VkComponentSwizzle g;
+        public VkComponentSwizzle b;
+        public VkComponentSwizzle a;
     }
 }
