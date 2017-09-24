@@ -96,7 +96,7 @@ namespace Ratchet.Drawing.Vulkan
             }
         }
 
-        public unsafe VkInstance(ref VkInstanceCreateInfo createInfo)
+        unsafe void InitVkInstance(ref VkInstanceCreateInfo createInfo)
         {
             VkAllocationCallbacks allocationCallbacks = Allocator.getAllocatorCallbacks();
             VkInstanceCreateInfo_Native createInfo_native = new VkInstanceCreateInfo_Native();
@@ -139,6 +139,24 @@ namespace Ratchet.Drawing.Vulkan
 
             System.Runtime.InteropServices.Marshal.FreeHGlobal(applicationInfo_native.applicationName);
             System.Runtime.InteropServices.Marshal.FreeHGlobal(applicationInfo_native.engineName);
+        }
+
+        public unsafe VkInstance(ref VkInstanceCreateInfo createInfo)
+        {
+            InitVkInstance(ref createInfo);
+        }
+
+        public unsafe VkInstance(string ApplicationName, int ApplicationVersion, string EngineName, int EngineVersion)
+        {
+            VkInstanceCreateInfo createInfo;
+            createInfo.applicationInfo.apiVersion = 0;
+            createInfo.applicationInfo.applicationName = ApplicationName;
+            createInfo.applicationInfo.applicationVersion = ApplicationVersion;
+            createInfo.applicationInfo.engineName = EngineName;
+            createInfo.applicationInfo.engineVersion = EngineVersion;
+            createInfo.enabledExtensionNames = new string[0];
+            createInfo.enabledLayerNames = new string[0];
+            InitVkInstance(ref createInfo);
         }
 
         public VkPhysicalDevice[] vkEnumeratePhysicalDevices()

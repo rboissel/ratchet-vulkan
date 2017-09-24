@@ -105,6 +105,7 @@
     <Compile Include="VkSampleCountFlagBits.cs" />
     <Compile Include="VkSemaphore.cs" />
     <Compile Include="VkSemaphoreCreateInfo.cs" />
+    <Compile Include="VkShaderModule.cs" />
     <Compile Include="VkSharingMode.cs" />
     <Compile Include="VkStrutureType.cs" />
     <Compile Include="VkSubmitInfo.cs" />

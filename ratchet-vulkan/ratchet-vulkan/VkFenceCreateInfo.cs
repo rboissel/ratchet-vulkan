@@ -9,6 +9,7 @@ namespace Ratchet.Drawing.Vulkan
 {
     public enum VkFenceCreateFlag : UInt32
     {
+        NONE = 0,
         VK_FENCE_CREATE_SIGNALED = 0x00000001,
     }
 

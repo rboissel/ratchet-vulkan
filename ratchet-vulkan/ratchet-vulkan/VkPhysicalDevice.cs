@@ -95,7 +95,7 @@ namespace Ratchet.Drawing.Vulkan
                     if (deviceCreateInfo.queueCreateInfos[n].queueFamily.physicalDevice != this) { throw new Exception("The queue family specified doesn't belong to this physical device"); }
                     pQueueCreateInfos[n].queueFamilyIndex = deviceCreateInfo.queueCreateInfos[n].queueFamily.index;
                     pQueueCreateInfos[n].pQueuePriorities = (float*)System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(float) * deviceCreateInfo.queueCreateInfos[n].queuePriorities.Length)).ToPointer();
-                    for (int  x = 0; x < deviceCreateInfo.queueCreateInfos[n].queuePriorities.Length; x++)
+                    for (int x = 0; x < deviceCreateInfo.queueCreateInfos[n].queuePriorities.Length; x++)
                     {
                         pQueueCreateInfos[n].pQueuePriorities[x] = deviceCreateInfo.queueCreateInfos[n].queuePriorities[x];
                     }
@@ -116,6 +116,15 @@ namespace Ratchet.Drawing.Vulkan
                 return new VkDevice(this, deviceHandle, deviceCreateInfo.queueCreateInfos);
             }
             else { throw new Exception("The method vkCreateDevice can't be accessed"); }
+        }
+
+        public unsafe VkDevice CreateDevice(VkDeviceQueueCreateInfo[] DeviceQueueCreateInfo)
+        {
+            VkDeviceCreateInfo deviceCreateInfo;
+            deviceCreateInfo.enabledExtensionNames = new string[0];
+            deviceCreateInfo.enabledLayerNames = new string[0];
+            deviceCreateInfo.queueCreateInfos = DeviceQueueCreateInfo;
+            return CreateDevice(ref deviceCreateInfo);
         }
     }
 }

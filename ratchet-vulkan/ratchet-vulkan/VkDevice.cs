@@ -132,6 +132,14 @@ namespace Ratchet.Drawing.Vulkan
             return AllocateMemory(ref allocateInfo);
         }
 
+        public VkDeviceMemory AllocateMemory(ulong allocationSize, VkMemoryType memoryType)
+        {
+            VkMemoryAllocateInfo allocateInfo = new VkMemoryAllocateInfo();
+            allocateInfo.allocationSize = allocationSize;
+            allocateInfo.memoryType = memoryType;
+            return AllocateMemory(ref allocateInfo);
+        }
+
         public unsafe VkCommandPool CreateCommandPool(ref VkCommandPoolCreateInfo commandPoolCreateInfo)
         {
             UInt64 commandPoolHandle = 0;
@@ -156,6 +164,11 @@ namespace Ratchet.Drawing.Vulkan
             commandPoolCreateInfo.flags = flags;
             commandPoolCreateInfo.queueFamilyIndex = queueFamily.index;
             return CreateCommandPool(ref commandPoolCreateInfo);
+        }
+
+        public VkCommandPool CreateCommandPool(VkCommandPoolCreateFlag flags, VkQueueFamilyProperties queueFamily)
+        {
+            return CreateCommandPool(flags, ref queueFamily);
         }
 
         public unsafe VkFence CreateFence(ref VkFenceCreateInfo fenceCreateInfo)

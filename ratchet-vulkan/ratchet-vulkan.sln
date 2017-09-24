@@ -9,6 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{2BD5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Triangle", "Samples\Triangle\Triangle.csproj", "{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClearImage", "Samples\ClearImage\ClearImage.csproj", "{8FD2835A-2D60-49FE-9F9E-761A8698EDA4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,11 +25,16 @@ Global
 		{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FD2835A-2D60-49FE-9F9E-761A8698EDA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FD2835A-2D60-49FE-9F9E-761A8698EDA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FD2835A-2D60-49FE-9F9E-761A8698EDA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FD2835A-2D60-49FE-9F9E-761A8698EDA4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0EB837D6-879A-48EB-9A51-4B82D7D9BB3D} = {2BD59CB7-5668-4A76-8F91-3292DCF0C2CD}
+		{8FD2835A-2D60-49FE-9F9E-761A8698EDA4} = {2BD59CB7-5668-4A76-8F91-3292DCF0C2CD}
 	EndGlobalSection
 EndGlobal
