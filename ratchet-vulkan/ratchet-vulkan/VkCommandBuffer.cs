@@ -197,6 +197,19 @@ namespace Ratchet.Drawing.Vulkan
             CmdBeginRenderPass(ref renderPassBegin, contents);
         }
 
+        public unsafe void CmdSetViewport(UInt32 firstViewport, UInt32 viewportCount, VkViewport[] viewports)
+        {
+            fixed (VkViewport* pViewport = &viewports[0])
+            {
+                _Parent.Device.vkCmdSetViewport(_Handle, firstViewport, viewportCount, new IntPtr(pViewport));
+            }
+        }
+
+        public void CmdSetViewport(VkViewport[] viewports)
+        {
+            CmdSetViewport(0, (uint)viewports.Length, viewports);
+        }
+
         public void CmdEndRenderPass()
         {
             _Parent.Device.vkCmdEndRenderPass(_Handle);

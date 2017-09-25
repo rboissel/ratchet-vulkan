@@ -57,7 +57,9 @@
     <Compile Include="VkCommandPool.cs" />
     <Compile Include="VkCommandPoolCreateInfo.cs" />
     <Compile Include="VkComponentMapping.cs" />
+    <Compile Include="VkCullModeFlag.cs" />
     <Compile Include="VkDependencyFlag.cs" />
+    <Compile Include="VkDescriptorSetLayout.cs" />
     <Compile Include="VkDevice.cs" />
     <Compile Include="VkDeviceCreateInfo.cs" />
     <Compile Include="VkDeviceMemory.cs" />
@@ -69,6 +71,8 @@
     <Compile Include="VkFormat.cs" />
     <Compile Include="VkFramebuffer.cs" />
     <Compile Include="VkFramebufferCreateInfo.cs" />
+    <Compile Include="VkFrontFace.cs" />
+    <Compile Include="VkGraphicsPipelineCreateInfo.cs" />
     <Compile Include="VkImage.cs" />
     <Compile Include="VkImageAspectFlag.cs" />
     <Compile Include="VkImageCreateInfo.cs" />
@@ -91,8 +95,20 @@
     <Compile Include="VkOffset2D.cs" />
     <Compile Include="VkPhysicalDevice.cs" />
     <Compile Include="VkPhysicalDeviceMemoryProperties.cs" />
+    <Compile Include="VkPipeline.cs" />
     <Compile Include="VkPipelineBindPoint.cs" />
+    <Compile Include="VkPipelineCreateFlags.cs" />
+    <Compile Include="VkPipelineInputAssemblyStateCreateInfo.cs" />
+    <Compile Include="VkPipelineLayout.cs" />
+    <Compile Include="VkPipelineLayoutCreateInfo.cs" />
+    <Compile Include="VkPipelineRasterizationStateCreateInfo.cs" />
+    <Compile Include="VkPipelineShaderStageCreateInfo.cs" />
     <Compile Include="VkPipelineStageFlag.cs" />
+    <Compile Include="VkPipelineTessellationStateCreateInfo.cs" />
+    <Compile Include="VkPipelineVertexInputStateCreateInfo.cs" />
+    <Compile Include="VkPipelineViewportStateCreateInfo.cs" />
+    <Compile Include="VkPolygonMode.cs" />
+    <Compile Include="VkPushConstantRange.cs" />
     <Compile Include="VkQueryControlFlag.cs" />
     <Compile Include="VkQueryPipelineStatisticFlag.cs" />
     <Compile Include="VkQueue.cs" />
@@ -106,13 +122,17 @@
     <Compile Include="VkSemaphore.cs" />
     <Compile Include="VkSemaphoreCreateInfo.cs" />
     <Compile Include="VkShaderModule.cs" />
+    <Compile Include="VkShaderModuleCreateInfo.cs" />
+    <Compile Include="VkShaderStageFlags.cs" />
     <Compile Include="VkSharingMode.cs" />
+    <Compile Include="VkSpecializationInfo.cs" />
     <Compile Include="VkStrutureType.cs" />
     <Compile Include="VkSubmitInfo.cs" />
     <Compile Include="VkSubpassContents.cs" />
     <Compile Include="VkSubpassDependency.cs" />
     <Compile Include="VkSubpassDescription.cs" />
     <Compile Include="VkSystemAllocationScope.cs" />
+    <Compile Include="VkViewport.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

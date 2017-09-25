@@ -33,6 +33,8 @@ namespace Ratchet.Drawing.Vulkan
         internal vkCmdBeginRenderPass_func vkCmdBeginRenderPass;
         internal delegate void vkCmdEndRenderPass_func(IntPtr commandBuffer);
         internal vkCmdEndRenderPass_func vkCmdEndRenderPass;
+        internal delegate void vkCmdSetViewport_func(IntPtr commandBuffer, UInt32 firstViewport, UInt32 viewportCount, IntPtr pViewports);
+        internal vkCmdSetViewport_func vkCmdSetViewport;
         internal delegate VkResult vkCreateCommandPool_func(IntPtr deviceHandle, IntPtr pAllocateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pCommandPoolHandle);
         internal vkCreateCommandPool_func vkCreateCommandPool;
         internal delegate VkResult vkCreateFence_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pFenceHandle);
@@ -47,6 +49,10 @@ namespace Ratchet.Drawing.Vulkan
         internal vkCreateRenderPass_func vkCreateRenderPass;
         internal delegate VkResult vkCreateSemaphore_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pSemaphoreHandle);
         internal vkCreateSemaphore_func vkCreateSemaphore;
+        internal delegate VkResult vkCreateShaderModule_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pShaderModuleHandle);
+        internal vkCreateShaderModule_func vkCreateShaderModule;
+        internal delegate VkResult vkCreatePipelineLayout_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pShaderModuleHandle);
+        internal vkCreatePipelineLayout_func vkCreatePipelineLayout;
         internal delegate VkResult vkEndCommandBuffer_func(IntPtr commandBufferHandle);
         internal vkEndCommandBuffer_func vkEndCommandBuffer;
         internal delegate VkResult vkGetFenceStatus_func(IntPtr deviceHandle, UInt64 fenceHandle);
@@ -83,6 +89,8 @@ namespace Ratchet.Drawing.Vulkan
             vkCreateImageView = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateImageView_func>("vkCreateImageView");
             vkCreateRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateRenderPass_func>("vkCreateRenderPass");
             vkCreateSemaphore = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateSemaphore_func>("vkCreateSemaphore");
+            vkCreateShaderModule = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateShaderModule_func>("vkCreateShaderModule");
+            vkCreatePipelineLayout = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreatePipelineLayout_func>("vkCreatePipelineLayout");
             vkEndCommandBuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkEndCommandBuffer_func>("vkEndCommandBuffer");
             vkGetFenceStatus = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetFenceStatus_func>("vkGetFenceStatus");
             vkGetDeviceQueue = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetDeviceQueue_func>("vkGetDeviceQueue");
@@ -522,6 +530,93 @@ namespace Ratchet.Drawing.Vulkan
             renderPassCreateInfo.dependencies = dependencies;
             return CreateRenderPass(ref renderPassCreateInfo);
         }
+
+        public unsafe VkShaderModule CreateShaderModule(ref VkShaderModuleCreateInfo shaderModuleCreateInfo)
+        {
+            VkResult result = VkResult.VK_SUCCESS;
+            UInt64 handle;
+            VkShaderModuleCreateInfo_Native shaderModuleCreateInfo_Native = new VkShaderModuleCreateInfo_Native();
+            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+
+            shaderModuleCreateInfo_Native.pNext = new IntPtr(0);
+            shaderModuleCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+            shaderModuleCreateInfo_Native.flags = shaderModuleCreateInfo.flags;
+            shaderModuleCreateInfo_Native.codeSize = new IntPtr(shaderModuleCreateInfo.code.Length);
+            fixed (byte* pCode = &shaderModuleCreateInfo.code[0])
+            {
+                shaderModuleCreateInfo_Native.pCode = new IntPtr(pCode);
+                result = vkCreateShaderModule(_Handle, new IntPtr(&shaderModuleCreateInfo_Native), ref allocator, new IntPtr(&handle));
+            }
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+            return new VkShaderModule(this, handle);
+        }
+
+        public unsafe VkPipelineLayout CreatePipelineLayout(ref VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo)
+        {
+            VkResult result = VkResult.VK_SUCCESS;
+            UInt64 handle;
+            VkPipelineLayoutCreateInfo_Native pipelineLayoutCreateInfo_Native = new VkPipelineLayoutCreateInfo_Native();
+            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+
+            pipelineLayoutCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+            pipelineLayoutCreateInfo_Native.pNext = new IntPtr(0);
+            pipelineLayoutCreateInfo_Native.flags = pipelineLayoutCreateInfo.flags;
+            pipelineLayoutCreateInfo_Native.pushConstantRangeCount = (uint)(pipelineLayoutCreateInfo.pushConstantRanges == null ? 0 : pipelineLayoutCreateInfo.pushConstantRanges.Length);
+            pipelineLayoutCreateInfo_Native.setLayoutCount = (uint)(pipelineLayoutCreateInfo.setLayouts == null ? 0 : pipelineLayoutCreateInfo.setLayouts.Length);
+
+            if (pipelineLayoutCreateInfo_Native.setLayoutCount > 0)
+            {
+                pipelineLayoutCreateInfo_Native.pSetLayouts = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(pipelineLayoutCreateInfo_Native.setLayoutCount * sizeof(UInt64)));
+                for (int n = 0; n < pipelineLayoutCreateInfo_Native.setLayoutCount; n++)
+                {
+                    ((UInt64*)(pipelineLayoutCreateInfo_Native.pSetLayouts.ToPointer()))[n] = pipelineLayoutCreateInfo.setLayouts[n]._Handle;
+                }
+            }
+            else
+            {
+                pipelineLayoutCreateInfo_Native.pSetLayouts = new IntPtr(0);
+            }
+
+
+            if (pipelineLayoutCreateInfo_Native.setLayoutCount == 0)
+            {
+                fixed (VkPushConstantRange* pPushConstRange = &pipelineLayoutCreateInfo.pushConstantRanges[0])
+                {
+                    pipelineLayoutCreateInfo_Native.pPushConstantRanges = new IntPtr(pPushConstRange);
+                    result = vkCreatePipelineLayout(_Handle, new IntPtr(&pipelineLayoutCreateInfo_Native), ref allocator, new IntPtr(&handle));
+                }
+            }
+            else
+            {
+                pipelineLayoutCreateInfo_Native.pPushConstantRanges = new IntPtr(0);
+                result = vkCreatePipelineLayout(_Handle, new IntPtr(&pipelineLayoutCreateInfo_Native), ref allocator, new IntPtr(&handle));
+            }
+
+            System.Runtime.InteropServices.Marshal.FreeHGlobal(pipelineLayoutCreateInfo_Native.pSetLayouts);
+
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+
+            return new VkPipelineLayout(this, handle);
+        }
+
+        public VkPipelineLayout CreatePipelineLayout(VkPipelineLayoutCreateFlag flags, VkPushConstantRange[] pushConstantRanges, VkDescriptorSetLayout[] setLayouts)
+        {
+            VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = new VkPipelineLayoutCreateInfo();
+            pipelineLayoutCreateInfo.flags = flags;
+            pipelineLayoutCreateInfo.pushConstantRanges = pushConstantRanges;
+            pipelineLayoutCreateInfo.setLayouts = setLayouts;
+
+            return CreatePipelineLayout(ref pipelineLayoutCreateInfo);
+        }
+
+        public VkShaderModule CreateShaderModule(VkShaderModuleCreateFlag flags, byte[] code)
+        {
+            VkShaderModuleCreateInfo shaderModuleCreateInfo = new VkShaderModuleCreateInfo();
+            shaderModuleCreateInfo.flags = flags;
+            shaderModuleCreateInfo.code = code;
+            return CreateShaderModule(ref shaderModuleCreateInfo);
+        }
+
 
         public unsafe bool WaitForFences(VkFence[] fences, bool waitAll, UInt64 timeout)
         {
