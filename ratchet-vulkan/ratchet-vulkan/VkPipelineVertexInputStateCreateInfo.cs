@@ -13,7 +13,7 @@ namespace Ratchet.Drawing.Vulkan
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    struct VkPipelineVertexInputStateCreateInfo
+    struct VkPipelineVertexInputStateCreateInfo_Native
     {
         public VkStructureType sType;
         public IntPtr pNext;
@@ -48,7 +48,7 @@ namespace Ratchet.Drawing.Vulkan
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct VkPipelineVertexInputStateCreateInfo_Native
+    public struct VkPipelineVertexInputStateCreateInfo
     {
         public VkPipelineVertexInputStateCreateFlag flags;
         public VkVertexInputBindingDescription[] vertexBindingDescriptions;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace Ratchet.Drawing.Vulkan
 {
@@ -11,21 +12,23 @@ namespace Ratchet.Drawing.Vulkan
         NONE = 0x0,
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     struct VkPipelineViewportStateCreateInfo_Native
     {
-        VkStructureType sType;
-        IntPtr pNext;
-        VkPipelineViewportStateCreateFlag flags;
-        UInt32 viewportCount;
-        IntPtr pViewports;
-        UInt32 scissorCount;
-        IntPtr pScissors;
+        public VkStructureType sType;
+        public IntPtr pNext;
+        public VkPipelineViewportStateCreateFlag flags;
+        public UInt32 viewportCount;
+        public IntPtr pViewports;
+        public UInt32 scissorCount;
+        public IntPtr pScissors;
     }
 
-    struct VkPipelineViewportStateCreateInfo
+    [StructLayout(LayoutKind.Sequential)]
+    public struct VkPipelineViewportStateCreateInfo
     {
-        VkPipelineViewportStateCreateFlag flags;
-        VkViewport[] pViewports;
-        VkRect2D[] pScissors;
+        public VkPipelineViewportStateCreateFlag flags;
+        public VkViewport[] viewports;
+        public VkRect2D[] scissors;
     }
 }

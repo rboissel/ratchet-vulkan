@@ -15,34 +15,34 @@ namespace Ratchet.Drawing.Vulkan
     [StructLayout(LayoutKind.Sequential)]
     struct VkPipelineRasterizationStateCreateInfo_Native
     {
-        VkStructureType sType;
-        IntPtr pNext;
-        VkPipelineRasterizationStateCreateFlag flags;
-        UInt32 depthClampEnable;
-        UInt32 rasterizerDiscardEnable;
-        VkPolygonMode polygonMode;
-        VkCullModeFlag cullMode;
-        VkFrontFace frontFace;
-        UInt32 depthBiasEnable;
-        float depthBiasConstantFactor;
-        float depthBiasClamp;
-        float depthBiasSlopeFactor;
-        float lineWidth;
+        public VkStructureType sType;
+        public IntPtr pNext;
+        public VkPipelineRasterizationStateCreateFlag flags;
+        public UInt32 depthClampEnable;
+        public UInt32 rasterizerDiscardEnable;
+        public VkPolygonMode polygonMode;
+        public VkCullModeFlag cullMode;
+        public VkFrontFace frontFace;
+        public UInt32 depthBiasEnable;
+        public float depthBiasConstantFactor;
+        public float depthBiasClamp;
+        public float depthBiasSlopeFactor;
+        public float lineWidth;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    struct VkPipelineRasterizationStateCreateInfo
+    public struct VkPipelineRasterizationStateCreateInfo
     {
-        VkPipelineRasterizationStateCreateFlag flags;
-        bool depthClampEnable;
-        bool rasterizerDiscardEnable;
-        VkPolygonMode polygonMode;
-        VkCullModeFlag cullMode;
-        VkFrontFace frontFace;
-        bool depthBiasEnable;
-        float depthBiasConstantFactor;
-        float depthBiasClamp;
-        float depthBiasSlopeFactor;
-        float lineWidth;
+        public VkPipelineRasterizationStateCreateFlag flags;
+        public bool depthClampEnable;
+        public bool rasterizerDiscardEnable;
+        public VkPolygonMode polygonMode;
+        public VkCullModeFlag cullMode;
+        public VkFrontFace frontFace;
+        public bool depthBiasEnable;
+        public float depthBiasConstantFactor;
+        public float depthBiasClamp;
+        public float depthBiasSlopeFactor;
+        public float lineWidth;
     }
 }

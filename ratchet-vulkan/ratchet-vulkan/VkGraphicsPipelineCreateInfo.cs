@@ -3,49 +3,52 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace Ratchet.Drawing.Vulkan
 {
+    [StructLayout(LayoutKind.Sequential)]
     struct VkGraphicsPipelineCreateInfo_Native
     {
-        VkStructureType sType;
-        IntPtr pNext;
-        VkPipelineCreateFlags flags;
-        UInt32 stageCount;
-        IntPtr pStages;
-        IntPtr pVertexInputState;
-        IntPtr pInputAssemblyState;
-        IntPtr pTessellationState;
-        IntPtr pViewportState;
-        IntPtr pRasterizationState;
-        IntPtr pMultisampleState;
-        IntPtr pDepthStencilState;
-        IntPtr pColorBlendState;
-        IntPtr pDynamicState;
-        UInt64 layout;
-        UInt64 renderPass;
-        UInt32 subpass;
-        UInt64 basePipelineHandle;
-        UInt32 basePipelineIndex;
+        public VkStructureType sType;
+        public IntPtr pNext;
+        public VkPipelineCreateFlags flags;
+        public UInt32 stageCount;
+        public IntPtr pStages;
+        public IntPtr pVertexInputState;
+        public IntPtr pInputAssemblyState;
+        public IntPtr pTessellationState;
+        public IntPtr pViewportState;
+        public IntPtr pRasterizationState;
+        public IntPtr pMultisampleState;
+        public IntPtr pDepthStencilState;
+        public IntPtr pColorBlendState;
+        public IntPtr pDynamicState;
+        public UInt64 layout;
+        public UInt64 renderPass;
+        public UInt32 subpass;
+        public UInt64 basePipelineHandle;
+        public UInt32 basePipelineIndex;
     }
 
-    struct VkGraphicsPipelineCreateInfo
+    [StructLayout(LayoutKind.Sequential)]
+    public struct VkGraphicsPipelineCreateInfo
     {
-        VkPipelineCreateFlags flags;
-        VkPipelineShaderStageCreateInfo[] stages;
-        VkPipelineVertexInputStateCreateInfo vertexInputState;
-        VkPipelineInputAssemblyStateCreateInfo inputAssemblyState;
-        VkPipelineTessellationStateCreateInfo? pTessellationState;
-        VkPipelineViewportStateCreateInfo? pViewportState;
-        VkPipelineRasterizationStateCreateInfo? pRasterizationState;
-        //VkPipelineMultisampleStateCreateInfo* pMultisampleState;
-        //VkPipelineDepthStencilStateCreateInfo* pDepthStencilState;
-        //VkPipelineColorBlendStateCreateInfo* pColorBlendState;
-        //VkPipelineDynamicStateCreateInfo* pDynamicState;
-        VkPipelineLayout layout;
-        VkRenderPass renderPass;
-        UInt32 subpass;
-        UInt64 basePipelineHandle;
-        UInt32 basePipelineIndex;
+        public VkPipelineCreateFlags flags;
+        public VkPipelineShaderStageCreateInfo[] stages;
+        public VkPipelineVertexInputStateCreateInfo vertexInputState;
+        public VkPipelineInputAssemblyStateCreateInfo inputAssemblyState;
+        public VkPipelineTessellationStateCreateInfo? tessellationState;
+        public VkPipelineViewportStateCreateInfo? viewportState;
+        public VkPipelineRasterizationStateCreateInfo rasterizationState;
+        public VkPipelineMultisampleStateCreateInfo? multisampleState;
+        public VkPipelineDepthStencilStateCreateInfo? depthStencilState;
+        public VkPipelineColorBlendStateCreateInfo? colorBlendState;
+        public VkPipelineDynamicStateCreateInfo? dynamicState;
+        public VkPipelineLayout layout;
+        public VkRenderPass renderPass;
+        public UInt32 subpass;
+        public VkPipeline basePipeline;
+        public UInt32 basePipelineIndex;
     }
 }

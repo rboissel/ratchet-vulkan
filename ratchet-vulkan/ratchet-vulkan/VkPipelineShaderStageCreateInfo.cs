@@ -28,22 +28,22 @@ namespace Ratchet.Drawing.Vulkan
     [StructLayout(LayoutKind.Sequential)]
     struct VkPipelineShaderStageCreateInfo_Native
     {
-        VkStructureType sType;
-        IntPtr pNext;
-        VkPipelineShaderStageCreateFlag flags;
-        VkShaderStageFlag stage;
-        UInt64 module;
-        IntPtr pName;
-        IntPtr pSpecializationInfo;
+        public VkStructureType sType;
+        public IntPtr pNext;
+        public VkPipelineShaderStageCreateFlag flags;
+        public VkShaderStageFlag stage;
+        public UInt64 module;
+        public IntPtr pName;
+        public IntPtr pSpecializationInfo;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    struct VkPipelineShaderStageCreateInfo
+    public struct VkPipelineShaderStageCreateInfo
     {
-        VkPipelineShaderStageCreateFlag flags;
-        VkShaderStageFlag stage;
-        VkShaderModule module;
-        string pName;
-        VkSpecializationInfo? pSpecializationInfo;
+        public VkPipelineShaderStageCreateFlag flags;
+        public VkShaderStageFlag stage;
+        public VkShaderModule module;
+        public string name;
+        public VkSpecializationInfo? specializationInfo;
     }
 }

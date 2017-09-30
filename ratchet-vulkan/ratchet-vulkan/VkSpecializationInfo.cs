@@ -8,6 +8,14 @@ using System.Runtime.InteropServices;
 namespace Ratchet.Drawing.Vulkan
 {
     [StructLayout(LayoutKind.Sequential)]
+    public struct VkSpecializationMapEntry
+    {
+        public UInt32 constantID;
+        public UInt32 offset;
+        public IntPtr size;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     struct VkSpecializationInfo_Native
     {
         public UInt32 mapEntryCount;
@@ -17,8 +25,9 @@ namespace Ratchet.Drawing.Vulkan
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    struct VkSpecializationInfo
+    public struct VkSpecializationInfo
     {
-
+        public VkSpecializationMapEntry[] mapEntries;
+        public byte[] data;
     }
 }

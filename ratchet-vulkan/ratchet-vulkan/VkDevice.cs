@@ -41,6 +41,8 @@ namespace Ratchet.Drawing.Vulkan
         internal vkCreateFence_func vkCreateFence;
         internal delegate VkResult vkCreateFramebuffer_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pFramebufferHandle);
         internal vkCreateFramebuffer_func vkCreateFramebuffer;
+        internal delegate VkResult vkCreateGraphicsPipelines_func(IntPtr deviceHandle, UInt64 pipelineChache, UInt32 createInfoCount, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pPipelines);
+        internal vkCreateGraphicsPipelines_func vkCreateGraphicsPipelines;
         internal delegate VkResult vkCreateImageView_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pImageBufferHandle);
         internal vkCreateImageView_func vkCreateImageView;
         internal delegate VkResult vkCreateImage_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pImageHandle);
@@ -82,9 +84,11 @@ namespace Ratchet.Drawing.Vulkan
             vkCmdClearColorImage_Int32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Int32_func>("vkCmdClearColorImage");
             vkCmdClearColorImage_UInt32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_UInt32_func>("vkCmdClearColorImage");
             vkCmdEndRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdEndRenderPass_func>("vkCmdEndRenderPass");
+            vkCmdSetViewport = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdSetViewport_func>("vkCmdSetViewport");
             vkCreateCommandPool = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateCommandPool_func>("vkCreateCommandPool");
             vkCreateFence = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateFence_func>("vkCreateFence");
             vkCreateFramebuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateFramebuffer_func>("vkCreateFramebuffer");
+            vkCreateGraphicsPipelines = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateGraphicsPipelines_func>("vkCreateGraphicsPipelines");
             vkCreateImage = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateImage_func>("vkCreateImage");
             vkCreateImageView = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateImageView_func>("vkCreateImageView");
             vkCreateRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateRenderPass_func>("vkCreateRenderPass");
@@ -617,6 +621,365 @@ namespace Ratchet.Drawing.Vulkan
             return CreateShaderModule(ref shaderModuleCreateInfo);
         }
 
+        public unsafe VkPipeline CreateGraphicsPipeline(VkPipelineCache pipelineCache, ref VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo)
+        {
+            VkResult result = VkResult.VK_SUCCESS;
+            UInt64 handle;
+            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+
+            if (graphicsPipelineCreateInfo.stages == null || graphicsPipelineCreateInfo.stages.Length == 0) { throw new Exception("There must be at least one stage in the graphics pipeline"); }
+            if ((graphicsPipelineCreateInfo.flags & VkPipelineCreateFlags.VK_PIPELINE_CREATE_ALLOW_DERIVATIVES) != 0)
+            {
+                // Check the basePipelineHandle
+            }
+
+            VkGraphicsPipelineCreateInfo_Native graphicsPipelineCreateInfo_Native = new VkGraphicsPipelineCreateInfo_Native();
+            graphicsPipelineCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+            graphicsPipelineCreateInfo_Native.pNext = new IntPtr(0);
+            graphicsPipelineCreateInfo_Native.flags = graphicsPipelineCreateInfo.flags;
+            graphicsPipelineCreateInfo_Native.layout = graphicsPipelineCreateInfo.layout._Handle;
+            graphicsPipelineCreateInfo_Native.renderPass = graphicsPipelineCreateInfo.renderPass._Handle;
+            graphicsPipelineCreateInfo_Native.subpass = graphicsPipelineCreateInfo.subpass;
+            graphicsPipelineCreateInfo_Native.stageCount = (uint)graphicsPipelineCreateInfo.stages.Length;
+            graphicsPipelineCreateInfo_Native.basePipelineHandle = graphicsPipelineCreateInfo.basePipeline == null ? 0 : graphicsPipelineCreateInfo.basePipeline._Handle;
+            graphicsPipelineCreateInfo_Native.basePipelineIndex = graphicsPipelineCreateInfo.basePipelineIndex;
+
+
+            VkPipelineShaderStageCreateInfo_Native[] stages_native = new VkPipelineShaderStageCreateInfo_Native[graphicsPipelineCreateInfo.stages.Length];
+            for (int n = 0; n < stages_native.Length; n++)
+            {
+                stages_native[n].sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                stages_native[n].pNext = new IntPtr(0);
+                stages_native[n].module = graphicsPipelineCreateInfo.stages[n].module._Handle;
+                stages_native[n].flags = graphicsPipelineCreateInfo.stages[n].flags;
+                stages_native[n].stage = graphicsPipelineCreateInfo.stages[n].stage;
+                byte[] utf8Name = System.Text.Encoding.UTF8.GetBytes(graphicsPipelineCreateInfo.stages[n].name);
+                stages_native[n].pName = System.Runtime.InteropServices.Marshal.AllocHGlobal(utf8Name.Length);
+                System.Runtime.InteropServices.Marshal.Copy(utf8Name, 0, stages_native[n].pName, utf8Name.Length);
+                if (graphicsPipelineCreateInfo.stages[n].specializationInfo.HasValue)
+                {
+                    stages_native[n].pSpecializationInfo = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(VkSpecializationInfo_Native)));
+                    if (graphicsPipelineCreateInfo.stages[n].specializationInfo.Value.mapEntries == null ||
+                        graphicsPipelineCreateInfo.stages[n].specializationInfo.Value.mapEntries.Length == 0)
+                    {
+                        ((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->mapEntryCount = 0;
+                        ((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->pMapEntries = new IntPtr(0);
+                    }
+
+                    if (graphicsPipelineCreateInfo.stages[n].specializationInfo.Value.data == null ||
+                        graphicsPipelineCreateInfo.stages[n].specializationInfo.Value.data.Length == 0)
+                    {
+                        ((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->dataSize = new IntPtr(0);
+                        ((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->pData = new IntPtr(0);
+                    }
+                    else
+                    {
+                        ((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->dataSize = new IntPtr(graphicsPipelineCreateInfo.stages[n].specializationInfo.Value.data.Length);
+                        ((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->pData = System.Runtime.InteropServices.Marshal.AllocHGlobal(((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->dataSize);
+                        System.Runtime.InteropServices.Marshal.Copy(
+                            graphicsPipelineCreateInfo.stages[n].specializationInfo.Value.data,
+                            0,
+                            ((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->pData,
+                            graphicsPipelineCreateInfo.stages[n].specializationInfo.Value.data.Length);
+                    }
+                }
+                else { stages_native[n].pSpecializationInfo = new IntPtr(0); }
+            }
+
+            fixed (VkPipelineShaderStageCreateInfo_Native* pStages_native = &stages_native[0])
+            {
+                graphicsPipelineCreateInfo_Native.pStages = new IntPtr(pStages_native);
+                VkPipelineVertexInputStateCreateInfo_Native pipelineVertexInputStateCreateInfo_Native = new VkPipelineVertexInputStateCreateInfo_Native();
+                pipelineVertexInputStateCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+                pipelineVertexInputStateCreateInfo_Native.pNext = new IntPtr(0);
+                pipelineVertexInputStateCreateInfo_Native.flags = graphicsPipelineCreateInfo.vertexInputState.flags;
+                if (graphicsPipelineCreateInfo.vertexInputState.vertexAttributeDescriptions == null ||
+                    graphicsPipelineCreateInfo.vertexInputState.vertexAttributeDescriptions.Length == 0)
+                {
+                    pipelineVertexInputStateCreateInfo_Native.vertexAttributeDescriptionCount = 0;
+                    pipelineVertexInputStateCreateInfo_Native.pVertexAttributeDescriptions = new IntPtr(0);
+                }
+                else
+                {
+                    pipelineVertexInputStateCreateInfo_Native.vertexAttributeDescriptionCount = (uint)graphicsPipelineCreateInfo.vertexInputState.vertexBindingDescriptions.Length;
+                    pipelineVertexInputStateCreateInfo_Native.pVertexAttributeDescriptions = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(VkVertexInputAttributeDescription) * pipelineVertexInputStateCreateInfo_Native.vertexAttributeDescriptionCount));
+                    for (int n = 0; n < pipelineVertexInputStateCreateInfo_Native.vertexAttributeDescriptionCount; n++)
+                    {
+                        ((VkVertexInputAttributeDescription*)pipelineVertexInputStateCreateInfo_Native.pVertexAttributeDescriptions.ToPointer())[n] = graphicsPipelineCreateInfo.vertexInputState.vertexAttributeDescriptions[n];
+                    }
+                }
+
+                if (graphicsPipelineCreateInfo.vertexInputState.vertexBindingDescriptions == null ||
+                    graphicsPipelineCreateInfo.vertexInputState.vertexBindingDescriptions.Length == 0)
+                {
+                    pipelineVertexInputStateCreateInfo_Native.vertexBindingDescriptionCount = 0;
+                    pipelineVertexInputStateCreateInfo_Native.pVertexBindingDescriptions = new IntPtr(0);
+                }
+                else
+                {
+                    pipelineVertexInputStateCreateInfo_Native.vertexBindingDescriptionCount = (uint)graphicsPipelineCreateInfo.vertexInputState.vertexBindingDescriptions.Length;
+                    pipelineVertexInputStateCreateInfo_Native.pVertexBindingDescriptions = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(VkVertexInputBindingDescription) * pipelineVertexInputStateCreateInfo_Native.vertexBindingDescriptionCount));
+                    for(int n = 0; n < pipelineVertexInputStateCreateInfo_Native.vertexBindingDescriptionCount; n++)
+                    {
+                        ((VkVertexInputBindingDescription*)pipelineVertexInputStateCreateInfo_Native.pVertexBindingDescriptions.ToPointer())[n] = graphicsPipelineCreateInfo.vertexInputState.vertexBindingDescriptions[n];
+                    }
+                }
+
+                graphicsPipelineCreateInfo_Native.pVertexInputState = new IntPtr(&pipelineVertexInputStateCreateInfo_Native);
+
+                {
+                    VkPipelineInputAssemblyStateCreateInfo_Native pipelineInputAssemblyStateCreateInfo_Native = new VkPipelineInputAssemblyStateCreateInfo_Native();
+
+                    pipelineInputAssemblyStateCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+                    pipelineInputAssemblyStateCreateInfo_Native.pNext = new IntPtr(0);
+                    pipelineInputAssemblyStateCreateInfo_Native.flags = graphicsPipelineCreateInfo.inputAssemblyState.flags;
+                    pipelineInputAssemblyStateCreateInfo_Native.primitiveRestartEnable = graphicsPipelineCreateInfo.inputAssemblyState.primitiveRestartEnable ? (uint)1 : (uint)0;
+                    pipelineInputAssemblyStateCreateInfo_Native.topology = graphicsPipelineCreateInfo.inputAssemblyState.topology;
+
+                    graphicsPipelineCreateInfo_Native.pInputAssemblyState = new IntPtr(&pipelineInputAssemblyStateCreateInfo_Native);
+                    {
+                        VkPipelineRasterizationStateCreateInfo_Native pipelineRasterizationStateCreateInfo_Native = new VkPipelineRasterizationStateCreateInfo_Native();
+                        pipelineRasterizationStateCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+                        pipelineRasterizationStateCreateInfo_Native.pNext = new IntPtr(0);
+                        pipelineRasterizationStateCreateInfo_Native.cullMode = graphicsPipelineCreateInfo.rasterizationState.cullMode;
+                        pipelineRasterizationStateCreateInfo_Native.depthBiasClamp = graphicsPipelineCreateInfo.rasterizationState.depthBiasClamp;
+                        pipelineRasterizationStateCreateInfo_Native.depthBiasConstantFactor = graphicsPipelineCreateInfo.rasterizationState.depthBiasConstantFactor;
+                        pipelineRasterizationStateCreateInfo_Native.depthBiasEnable = graphicsPipelineCreateInfo.rasterizationState.depthBiasEnable ? (uint)1 : (uint)0;
+                        pipelineRasterizationStateCreateInfo_Native.depthBiasSlopeFactor = graphicsPipelineCreateInfo.rasterizationState.depthBiasSlopeFactor;
+                        pipelineRasterizationStateCreateInfo_Native.depthClampEnable = graphicsPipelineCreateInfo.rasterizationState.depthClampEnable ? (uint)1 : (uint)0;
+                        pipelineRasterizationStateCreateInfo_Native.flags = graphicsPipelineCreateInfo.rasterizationState.flags;
+                        pipelineRasterizationStateCreateInfo_Native.frontFace = graphicsPipelineCreateInfo.rasterizationState.frontFace;
+                        pipelineRasterizationStateCreateInfo_Native.lineWidth = graphicsPipelineCreateInfo.rasterizationState.lineWidth;
+                        pipelineRasterizationStateCreateInfo_Native.polygonMode = graphicsPipelineCreateInfo.rasterizationState.polygonMode;
+                        pipelineRasterizationStateCreateInfo_Native.rasterizerDiscardEnable = graphicsPipelineCreateInfo.rasterizationState.rasterizerDiscardEnable ? (uint)1 : (uint)0;
+
+                        graphicsPipelineCreateInfo_Native.pRasterizationState = new IntPtr(&pipelineRasterizationStateCreateInfo_Native);
+
+                        {
+                            VkPipelineMultisampleStateCreateInfo_Native pipelineMultisampleStateCreateInfo_Native = new VkPipelineMultisampleStateCreateInfo_Native();
+                            UInt64 sampleMask = 0;
+
+                            if (graphicsPipelineCreateInfo.multisampleState.HasValue)
+                            {
+                                pipelineMultisampleStateCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+                                pipelineMultisampleStateCreateInfo_Native.pNext = new IntPtr(0);
+                                pipelineMultisampleStateCreateInfo_Native.flags = graphicsPipelineCreateInfo.multisampleState.Value.flags;
+                                pipelineMultisampleStateCreateInfo_Native.alphaToCoverageEnable = graphicsPipelineCreateInfo.multisampleState.Value.alphaToCoverageEnable ? (uint)1 : (uint)0;
+                                pipelineMultisampleStateCreateInfo_Native.alphaToOneEnable = graphicsPipelineCreateInfo.multisampleState.Value.alphaToOneEnable ? (uint)1 : (uint)0;
+                                pipelineMultisampleStateCreateInfo_Native.minSampleShading = graphicsPipelineCreateInfo.multisampleState.Value.minSampleShading;
+                                pipelineMultisampleStateCreateInfo_Native.sampleShadingEnable = graphicsPipelineCreateInfo.multisampleState.Value.sampleShadingEnable ? (uint)1 : (uint)0;
+                                pipelineMultisampleStateCreateInfo_Native.rasterizationSamples = graphicsPipelineCreateInfo.multisampleState.Value.rasterizationSamples;
+                                pipelineMultisampleStateCreateInfo_Native.pSampleMask = new IntPtr(&sampleMask);
+                                UInt32* pSampleMask = (UInt32*)pipelineMultisampleStateCreateInfo_Native.pSampleMask.ToPointer();
+                                if (graphicsPipelineCreateInfo.multisampleState.Value.sampleMask.Length >= 1) { pSampleMask[0] = graphicsPipelineCreateInfo.multisampleState.Value.sampleMask[0]; }
+                                if (graphicsPipelineCreateInfo.multisampleState.Value.sampleMask.Length >= 2) { pSampleMask[1] = graphicsPipelineCreateInfo.multisampleState.Value.sampleMask[1]; }
+                                graphicsPipelineCreateInfo_Native.pMultisampleState = new IntPtr(&pipelineMultisampleStateCreateInfo_Native);
+                            }
+                            else { graphicsPipelineCreateInfo_Native.pMultisampleState = new IntPtr(0); }
+
+                            {
+                                VkPipelineDepthStencilStateCreateInfo_Native pipelineDepthStencilStateCreateInfo_Native = new VkPipelineDepthStencilStateCreateInfo_Native();
+                                if (graphicsPipelineCreateInfo.depthStencilState.HasValue)
+                                {
+                                    pipelineDepthStencilStateCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+                                    pipelineDepthStencilStateCreateInfo_Native.pNext = new IntPtr(0);
+                                    pipelineDepthStencilStateCreateInfo_Native.back = graphicsPipelineCreateInfo.depthStencilState.Value.back;
+                                    pipelineDepthStencilStateCreateInfo_Native.depthBoundsTestEnable = graphicsPipelineCreateInfo.depthStencilState.Value.depthBoundsTestEnable ? (uint)1 : (uint)0;
+                                    pipelineDepthStencilStateCreateInfo_Native.depthCompareOp = graphicsPipelineCreateInfo.depthStencilState.Value.depthCompareOp;
+                                    pipelineDepthStencilStateCreateInfo_Native.depthTestEnable = graphicsPipelineCreateInfo.depthStencilState.Value.depthTestEnable ? (uint)1 : (uint)0;
+                                    pipelineDepthStencilStateCreateInfo_Native.depthWriteEnable = graphicsPipelineCreateInfo.depthStencilState.Value.depthWriteEnable ? (uint)1 : (uint)0;
+                                    pipelineDepthStencilStateCreateInfo_Native.flags = graphicsPipelineCreateInfo.depthStencilState.Value.flags;
+                                    pipelineDepthStencilStateCreateInfo_Native.front = graphicsPipelineCreateInfo.depthStencilState.Value.front;
+                                    pipelineDepthStencilStateCreateInfo_Native.maxDepthBounds = graphicsPipelineCreateInfo.depthStencilState.Value.maxDepthBounds;
+                                    pipelineDepthStencilStateCreateInfo_Native.minDepthBounds = graphicsPipelineCreateInfo.depthStencilState.Value.minDepthBounds;
+                                    pipelineDepthStencilStateCreateInfo_Native.stencilTestEnable = graphicsPipelineCreateInfo.depthStencilState.Value.stencilTestEnable ? (uint)1 : (uint)0;
+                                    graphicsPipelineCreateInfo_Native.pDepthStencilState = new IntPtr(&pipelineDepthStencilStateCreateInfo_Native);
+                                }
+                                else { graphicsPipelineCreateInfo_Native.pDepthStencilState = new IntPtr(0); }
+
+                                {
+                                    VkPipelineColorBlendStateCreateInfo_Native pipelineColorBlendStateCreateInfo_Native = new VkPipelineColorBlendStateCreateInfo_Native();
+                                    if (graphicsPipelineCreateInfo.colorBlendState.HasValue)
+                                    {
+                                        pipelineColorBlendStateCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+                                        pipelineColorBlendStateCreateInfo_Native.pNext = new IntPtr(0);
+                                        pipelineColorBlendStateCreateInfo_Native.blendConstants_A = graphicsPipelineCreateInfo.colorBlendState.Value.blendConstants_A;
+                                        pipelineColorBlendStateCreateInfo_Native.blendConstants_B = graphicsPipelineCreateInfo.colorBlendState.Value.blendConstants_B;
+                                        pipelineColorBlendStateCreateInfo_Native.blendConstants_G = graphicsPipelineCreateInfo.colorBlendState.Value.blendConstants_G;
+                                        pipelineColorBlendStateCreateInfo_Native.blendConstants_R = graphicsPipelineCreateInfo.colorBlendState.Value.blendConstants_R;
+                                        pipelineColorBlendStateCreateInfo_Native.flags = graphicsPipelineCreateInfo.colorBlendState.Value.flags;
+                                        pipelineColorBlendStateCreateInfo_Native.logicOp = graphicsPipelineCreateInfo.colorBlendState.Value.logicOp;
+                                        pipelineColorBlendStateCreateInfo_Native.logicOpEnable = graphicsPipelineCreateInfo.colorBlendState.Value.logicOpEnable ? (uint)1 : (uint)0;
+                                        pipelineColorBlendStateCreateInfo_Native.attachmentCount = graphicsPipelineCreateInfo.colorBlendState.Value.attachments == null ? (uint)0 : (uint)graphicsPipelineCreateInfo.colorBlendState.Value.attachments.Length;
+
+                                        if (pipelineColorBlendStateCreateInfo_Native.attachmentCount > 0)
+                                        {
+                                            VkPipelineColorBlendAttachmentState* attachments = (VkPipelineColorBlendAttachmentState*)System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(pipelineColorBlendStateCreateInfo_Native.attachmentCount * sizeof(VkPipelineColorBlendAttachmentState))).ToPointer();
+                                            for (int n = 0; n < pipelineColorBlendStateCreateInfo_Native.attachmentCount; n++)
+                                            {
+                                                attachments[n].alphaBlendOp = graphicsPipelineCreateInfo.colorBlendState.Value.attachments[n].alphaBlendOp;
+                                                attachments[n].blendEnable = graphicsPipelineCreateInfo.colorBlendState.Value.attachments[n].blendEnable;
+                                                attachments[n].colorBlendOp = graphicsPipelineCreateInfo.colorBlendState.Value.attachments[n].colorBlendOp;
+                                                attachments[n].colorWriteMask = graphicsPipelineCreateInfo.colorBlendState.Value.attachments[n].colorWriteMask;
+                                                attachments[n].dstAlphaBlendFactor = graphicsPipelineCreateInfo.colorBlendState.Value.attachments[n].dstAlphaBlendFactor;
+                                                attachments[n].dstColorBlendFactor = graphicsPipelineCreateInfo.colorBlendState.Value.attachments[n].dstColorBlendFactor;
+                                                attachments[n].srcAlphaBlendFactor = graphicsPipelineCreateInfo.colorBlendState.Value.attachments[n].srcAlphaBlendFactor;
+                                                attachments[n].srcColorBlendFactor = graphicsPipelineCreateInfo.colorBlendState.Value.attachments[n].srcColorBlendFactor;
+                                            }
+
+                                            pipelineColorBlendStateCreateInfo_Native.pAttachments = new IntPtr(attachments);
+                                        }
+                                        else { pipelineColorBlendStateCreateInfo_Native.pAttachments = new IntPtr(0); }
+                                        graphicsPipelineCreateInfo_Native.pColorBlendState = new IntPtr(&pipelineColorBlendStateCreateInfo_Native);
+                                    }
+                                    else { graphicsPipelineCreateInfo_Native.pColorBlendState = new IntPtr(0); }
+
+
+                                    {
+                                        VkPipelineDynamicStateCreateInfo_Native pipelineDynamicStateCreateInfo_Native = new VkPipelineDynamicStateCreateInfo_Native();
+
+                                        if (graphicsPipelineCreateInfo.dynamicState.HasValue)
+                                        {
+                                            pipelineDynamicStateCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+                                            pipelineDynamicStateCreateInfo_Native.pNext = new IntPtr(0);
+                                            pipelineDynamicStateCreateInfo_Native.flags = graphicsPipelineCreateInfo.dynamicState.Value.flags;
+                                            pipelineDynamicStateCreateInfo_Native.dynamicStateCount = graphicsPipelineCreateInfo.dynamicState.Value.dynamicStates == null ? (uint)0 : (uint)graphicsPipelineCreateInfo.dynamicState.Value.dynamicStates.Length;
+
+                                            if (pipelineDynamicStateCreateInfo_Native.dynamicStateCount > 0)
+                                            {
+                                                VkDynamicState* dynamicStates = (VkDynamicState*)System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(graphicsPipelineCreateInfo.dynamicState.Value.dynamicStates.Length * sizeof(VkDynamicState))).ToPointer();
+                                                for (int n = 0; n < pipelineDynamicStateCreateInfo_Native.dynamicStateCount; n++)
+                                                {
+                                                    dynamicStates[n] = graphicsPipelineCreateInfo.dynamicState.Value.dynamicStates[n];
+                                                }
+
+                                                pipelineDynamicStateCreateInfo_Native.pDynamicStates = new IntPtr(dynamicStates);
+                                            }
+                                            else { pipelineDynamicStateCreateInfo_Native.pDynamicStates = new IntPtr(0); }
+                                            graphicsPipelineCreateInfo_Native.pDynamicState = new IntPtr(&pipelineDynamicStateCreateInfo_Native);
+                                        }
+                                        else { graphicsPipelineCreateInfo_Native.pDynamicState = new IntPtr(0); }
+
+                                        {
+                                            VkPipelineViewportStateCreateInfo_Native pipelineViewportStateCreateInfo_Native = new VkPipelineViewportStateCreateInfo_Native();
+                                            if (graphicsPipelineCreateInfo.viewportState.HasValue)
+                                            {
+                                                pipelineViewportStateCreateInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+                                                pipelineViewportStateCreateInfo_Native.pNext = new IntPtr(0);
+                                                pipelineViewportStateCreateInfo_Native.flags = graphicsPipelineCreateInfo.viewportState.Value.flags;
+                                                pipelineViewportStateCreateInfo_Native.viewportCount = graphicsPipelineCreateInfo.viewportState.Value.viewports == null ? (uint)0 : (uint)graphicsPipelineCreateInfo.viewportState.Value.viewports.Length;
+                                                pipelineViewportStateCreateInfo_Native.scissorCount = graphicsPipelineCreateInfo.viewportState.Value.scissors == null ? (uint)0 : (uint)graphicsPipelineCreateInfo.viewportState.Value.scissors.Length;
+
+                                                VkViewport* viewports = (VkViewport*)System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(pipelineViewportStateCreateInfo_Native.viewportCount * sizeof(VkViewport)));
+                                                for (int n = 0; n < pipelineViewportStateCreateInfo_Native.viewportCount; n++)
+                                                {
+                                                    viewports[n] = graphicsPipelineCreateInfo.viewportState.Value.viewports[n];
+                                                }
+                                                pipelineViewportStateCreateInfo_Native.pViewports = new IntPtr(viewports);
+
+                                                VkRect2D* scissors = (VkRect2D*)System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(pipelineViewportStateCreateInfo_Native.scissorCount * sizeof(VkRect2D)));
+                                                for (int n = 0; n < pipelineViewportStateCreateInfo_Native.viewportCount; n++)
+                                                {
+                                                    scissors[n] = graphicsPipelineCreateInfo.viewportState.Value.scissors[n];
+                                                }
+                                                pipelineViewportStateCreateInfo_Native.pScissors = new IntPtr(scissors);
+
+                                                graphicsPipelineCreateInfo_Native.pViewportState = new IntPtr(&pipelineViewportStateCreateInfo_Native);
+                                            }
+                                            else { graphicsPipelineCreateInfo_Native.pViewportState = new IntPtr(0); }
+
+                                            if (pipelineCache == null)
+                                            {
+                                                result = vkCreateGraphicsPipelines(_Handle, 0, 1, new IntPtr(&graphicsPipelineCreateInfo_Native), ref allocator, new IntPtr(&handle));
+                                            }
+                                            else
+                                            {
+                                                result = vkCreateGraphicsPipelines(_Handle, pipelineCache._Handle, 1, new IntPtr(&graphicsPipelineCreateInfo_Native), ref allocator, new IntPtr(&handle));
+                                            }
+
+                                            if (graphicsPipelineCreateInfo.viewportState.HasValue)
+                                            {
+                                                System.Runtime.InteropServices.Marshal.FreeHGlobal(pipelineViewportStateCreateInfo_Native.pViewports);
+                                                System.Runtime.InteropServices.Marshal.FreeHGlobal(pipelineViewportStateCreateInfo_Native.pScissors);
+                                            }
+                                        }
+
+                                        if (graphicsPipelineCreateInfo.dynamicState.HasValue)
+                                        {
+                                            System.Runtime.InteropServices.Marshal.FreeHGlobal(graphicsPipelineCreateInfo_Native.pDynamicState);
+                                        }
+                                    }
+
+                                    if (graphicsPipelineCreateInfo.colorBlendState.HasValue)
+                                    {
+                                        System.Runtime.InteropServices.Marshal.FreeHGlobal(pipelineColorBlendStateCreateInfo_Native.pAttachments);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                }
+
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(pipelineVertexInputStateCreateInfo_Native.pVertexBindingDescriptions);
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(pipelineVertexInputStateCreateInfo_Native.pVertexAttributeDescriptions);
+            }
+
+            for (int n = 0; n < stages_native.Length; n++)
+            {
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(stages_native[n].pName);
+                if (stages_native[n].pSpecializationInfo.ToInt64() == 0)
+                {
+                    System.Runtime.InteropServices.Marshal.FreeHGlobal(((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->pData);
+                    System.Runtime.InteropServices.Marshal.FreeHGlobal(((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->pMapEntries);
+                }
+                System.Runtime.InteropServices.Marshal.FreeHGlobal(stages_native[n].pSpecializationInfo);
+            }
+
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+
+            return new VkPipeline(handle, this);
+        }
+
+        public unsafe VkPipeline CreateGraphicsPipeline(VkPipelineCache pipelineCache,
+                                                        VkPipelineCreateFlags flags,
+                                                        VkPipelineShaderStageCreateInfo[] stages,
+                                                        VkPipelineVertexInputStateCreateInfo vertexInputState,
+                                                        VkPipelineInputAssemblyStateCreateInfo inputAssemblyState,
+                                                        VkPipelineTessellationStateCreateInfo tessellationState,
+                                                        VkPipelineViewportStateCreateInfo viewportState,
+                                                        VkPipelineRasterizationStateCreateInfo rasterizationState,
+                                                        VkPipelineMultisampleStateCreateInfo multisampleState,
+                                                        VkPipelineDepthStencilStateCreateInfo depthStencilState,
+                                                        VkPipelineColorBlendStateCreateInfo colorBlendState,
+                                                        VkPipelineDynamicStateCreateInfo dynamicState,
+                                                        VkPipelineLayout layout,
+                                                        VkRenderPass renderPass,
+                                                        UInt32 subpass,
+                                                        VkPipeline basePipeline,
+                                                        UInt32 basePipelineIndex)
+        {
+            VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = new VkGraphicsPipelineCreateInfo();
+
+            graphicsPipelineCreateInfo.flags = flags;
+            graphicsPipelineCreateInfo.stages = stages;
+            graphicsPipelineCreateInfo.vertexInputState = vertexInputState;
+            graphicsPipelineCreateInfo.inputAssemblyState = inputAssemblyState;
+            graphicsPipelineCreateInfo.tessellationState = tessellationState;
+            graphicsPipelineCreateInfo.viewportState = viewportState;
+            graphicsPipelineCreateInfo.rasterizationState = rasterizationState;
+            graphicsPipelineCreateInfo.multisampleState = multisampleState;
+            graphicsPipelineCreateInfo.depthStencilState = depthStencilState;
+            graphicsPipelineCreateInfo.colorBlendState = colorBlendState;
+            graphicsPipelineCreateInfo.dynamicState = dynamicState;
+            graphicsPipelineCreateInfo.layout = layout;
+            graphicsPipelineCreateInfo.renderPass = renderPass;
+            graphicsPipelineCreateInfo.subpass = subpass;
+            graphicsPipelineCreateInfo.basePipeline = basePipeline;
+            graphicsPipelineCreateInfo.basePipelineIndex = basePipelineIndex;
+
+            return CreateGraphicsPipeline(pipelineCache, ref graphicsPipelineCreateInfo);
+        }
 
         public unsafe bool WaitForFences(VkFence[] fences, bool waitAll, UInt64 timeout)
         {
