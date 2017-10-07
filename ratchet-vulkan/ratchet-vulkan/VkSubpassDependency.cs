@@ -8,12 +8,13 @@ namespace Ratchet.Drawing.Vulkan
 {
     public struct VkSubpassDependency
     {
-        UInt32 srcSubpass;
-        UInt32 dstSubpass;
-        VkPipelineStageFlag srcStageMask;
-        VkPipelineStageFlag dstStageMask;
-        VkAccessFlag srcAccessMask;
-        VkAccessFlag dstAccessMask;
-        VkDependencyFlag dependencyFlags;
+        public const UInt32 VK_SUBPASS_EXTERNAL = 0xFFFFFFFF;
+        public UInt32 srcSubpass;
+        public UInt32 dstSubpass;
+        public VkPipelineStageFlag srcStageMask;
+        public VkPipelineStageFlag dstStageMask;
+        public VkAccessFlag srcAccessMask;
+        public VkAccessFlag dstAccessMask;
+        public VkDependencyFlag dependencyFlags;
     }
 }

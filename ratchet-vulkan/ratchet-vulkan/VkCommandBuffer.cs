@@ -210,6 +210,16 @@ namespace Ratchet.Drawing.Vulkan
             CmdSetViewport(0, (uint)viewports.Length, viewports);
         }
 
+        public unsafe void CmdBindPipeline(VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline)
+        {
+            _Parent.Device.vkCmdBindPipeline(_Handle, pipelineBindPoint, pipeline._Handle);
+        }
+
+        public unsafe void CmdDraw(UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex, UInt32 firstInstance)
+        {
+            _Parent.Device.vkCmdDraw(_Handle, vertexCount, instanceCount, firstVertex, firstInstance);
+        }
+
         public void CmdEndRenderPass()
         {
             _Parent.Device.vkCmdEndRenderPass(_Handle);

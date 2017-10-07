@@ -1,6 +1,6 @@
 ﻿namespace Triangle
 {
-    partial class Form1
+    partial class Triangle
     {
         /// <summary>
         /// Variable nécessaire au concepteur.
@@ -30,14 +30,15 @@
         {
             this.SuspendLayout();
             // 
-            // Form1
+            // Triangle
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(278, 244);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.ClientSize = new System.Drawing.Size(618, 424);
+            this.Name = "Triangle";
+            this.Text = "Triangle";
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.Paint += new System.Windows.Forms.PaintEventHandler(this.Triangle_Paint);
             this.ResumeLayout(false);
 
         }

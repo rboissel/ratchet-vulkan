@@ -10,13 +10,16 @@ namespace Ratchet.Drawing.Vulkan
     {
         internal UInt64 _Handle;
         VkDevice _Parent;
+        VkImage _Image;
 
         public VkDevice Device { get { return _Parent; } }
+        public VkImage Image { get { return _Image; } }
 
-        internal VkImageView(UInt64 Handle, VkDevice Parent)
+        internal VkImageView(UInt64 Handle, VkDevice Parent, VkImage Image)
         {
             _Parent = Parent;
             _Handle = Handle;
+            _Image = Image;
         }
     }
 }

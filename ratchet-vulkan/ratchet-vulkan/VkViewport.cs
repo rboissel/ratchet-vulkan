@@ -16,5 +16,15 @@ namespace Ratchet.Drawing.Vulkan
         public float height;
         public float minDepth;
         public float maxDepth;
+
+        public VkViewport(float x, float y, float width, float height, float minDepth, float maxDepth)
+        {
+            this.x = x;
+            this.y = y;
+            this.width = width;
+            this.height = height;
+            this.minDepth = minDepth;
+            this.maxDepth = maxDepth;
+        }
     }
 }

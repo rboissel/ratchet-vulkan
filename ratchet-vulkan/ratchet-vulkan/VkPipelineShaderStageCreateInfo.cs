@@ -15,12 +15,12 @@ namespace Ratchet.Drawing.Vulkan
     public enum VkShaderStageFlag : UInt32
     {
         NONE = 0x0,
-        VK_SHADER_STAGE_VERTEX_BIT = 0x00000001,
-        VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT = 0x00000002,
-        VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT = 0x00000004,
-        VK_SHADER_STAGE_GEOMETRY_BIT = 0x00000008,
-        VK_SHADER_STAGE_FRAGMENT_BIT = 0x00000010,
-        VK_SHADER_STAGE_COMPUTE_BIT = 0x00000020,
+        VK_SHADER_STAGE_VERTEX = 0x00000001,
+        VK_SHADER_STAGE_TESSELLATION_CONTROL = 0x00000002,
+        VK_SHADER_STAGE_TESSELLATION_EVALUATION = 0x00000004,
+        VK_SHADER_STAGE_GEOMETRY = 0x00000008,
+        VK_SHADER_STAGE_FRAGMENT = 0x00000010,
+        VK_SHADER_STAGE_COMPUTE = 0x00000020,
         VK_SHADER_STAGE_ALL_GRAPHICS = 0x0000001F,
         VK_SHADER_STAGE_ALL = 0x7FFFFFFF,
     }
@@ -45,5 +45,14 @@ namespace Ratchet.Drawing.Vulkan
         public VkShaderModule module;
         public string name;
         public VkSpecializationInfo? specializationInfo;
+
+        public VkPipelineShaderStageCreateInfo(VkShaderModule module, string entryPoint, VkShaderStageFlag stage)
+        {
+            this.module = module;
+            name = entryPoint;
+            flags = VkPipelineShaderStageCreateFlag.NONE;
+            this.stage = stage;
+            specializationInfo = null;
+        }
     }
 }

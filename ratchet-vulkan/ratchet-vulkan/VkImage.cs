@@ -10,8 +10,10 @@ namespace Ratchet.Drawing.Vulkan
     {
         internal UInt64 _Handle;
         VkDevice _Parent;
+        VkFormat _Format;
 
         public VkDevice Device { get { return _Parent; } }
+        public VkFormat Format { get { return _Format; } }
         VkMemoryRequirements _MemoryRequirements;
         public VkMemoryRequirements MemoryRequirements { get { return _MemoryRequirements; } }
         unsafe VkMemoryRequirements GetImageMemoryRequirements()
@@ -35,17 +37,34 @@ namespace Ratchet.Drawing.Vulkan
             return memoryRequirements;
         }
 
-        internal VkImage(UInt64 Handle, VkDevice Parent)
+        internal VkImage(UInt64 Handle, VkDevice Parent, VkFormat Format)
         {
             _Parent = Parent;
             _Handle = Handle;
             _MemoryRequirements = GetImageMemoryRequirements();
+            _Format = Format;
         }
 
         public void BindMemory(VkDeviceMemory memory, UInt64 offset)
         {
             VkResult result = _Parent.vkBindImageMemory(_Parent._Handle, _Handle, memory._Handle, offset);
             if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+        }
+
+        public VkImageView CreateImageView(VkImageViewType viewType, VkFormat format, VkComponentMapping componentMapping, VkImageSubresourceRange subressourceRange)
+        {
+            return _Parent.CreateImageView(this, viewType, format, componentMapping, subressourceRange);
+        }
+
+
+        public VkImageView CreateImageView(VkImageViewType viewType, VkComponentMapping componentMapping, VkImageSubresourceRange subressourceRange)
+        {
+            return _Parent.CreateImageView(this, viewType, _Format, componentMapping, subressourceRange);
+        }
+
+        public VkImageView CreateImageView(VkImageViewType viewType, VkImageSubresourceRange subressourceRange)
+        {
+            return _Parent.CreateImageView(this, viewType, _Format, new VkComponentMapping(VkComponentSwizzle.VK_COMPONENT_SWIZZLE_IDENTITY, VkComponentSwizzle.VK_COMPONENT_SWIZZLE_IDENTITY, VkComponentSwizzle.VK_COMPONENT_SWIZZLE_IDENTITY, VkComponentSwizzle.VK_COMPONENT_SWIZZLE_IDENTITY), subressourceRange);
         }
     }
 }

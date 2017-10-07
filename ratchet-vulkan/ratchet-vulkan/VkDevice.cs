@@ -31,8 +31,12 @@ namespace Ratchet.Drawing.Vulkan
         internal vkCmdClearColorImage_UInt32_func vkCmdClearColorImage_UInt32;
         internal delegate void vkCmdBeginRenderPass_func(IntPtr commandBuffer, IntPtr pRenderPassBegin, VkSubpassContents contents);
         internal vkCmdBeginRenderPass_func vkCmdBeginRenderPass;
+        internal delegate void vkCmdBindPipeline_func(IntPtr commandBuffer, VkPipelineBindPoint pipelineBindPoint, UInt64 pipeline);
+        internal vkCmdBindPipeline_func vkCmdBindPipeline;
         internal delegate void vkCmdEndRenderPass_func(IntPtr commandBuffer);
         internal vkCmdEndRenderPass_func vkCmdEndRenderPass;
+        internal delegate void vkCmdDraw_func(IntPtr commandBuffer, UInt32 vertexCount, UInt32 instanceCount, UInt32 firstVertex, UInt32 firstInstance);
+        internal vkCmdDraw_func vkCmdDraw;
         internal delegate void vkCmdSetViewport_func(IntPtr commandBuffer, UInt32 firstViewport, UInt32 viewportCount, IntPtr pViewports);
         internal vkCmdSetViewport_func vkCmdSetViewport;
         internal delegate VkResult vkCreateCommandPool_func(IntPtr deviceHandle, IntPtr pAllocateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pCommandPoolHandle);
@@ -80,10 +84,12 @@ namespace Ratchet.Drawing.Vulkan
             vkBeginCommandBuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkBeginCommandBuffer_func>("vkBeginCommandBuffer");
             vkBindImageMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkBindImageMemory_func>("vkBindImageMemory");
             vkCmdBeginRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdBeginRenderPass_func>("vkCmdBeginRenderPass");
+            vkCmdBindPipeline = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdBindPipeline_func>("vkCmdBindPipeline");
             vkCmdClearColorImage_Float = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Float_func>("vkCmdClearColorImage");
             vkCmdClearColorImage_Int32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Int32_func>("vkCmdClearColorImage");
             vkCmdClearColorImage_UInt32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_UInt32_func>("vkCmdClearColorImage");
             vkCmdEndRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdEndRenderPass_func>("vkCmdEndRenderPass");
+            vkCmdDraw = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdDraw_func>("vkCmdDraw");
             vkCmdSetViewport = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdSetViewport_func>("vkCmdSetViewport");
             vkCreateCommandPool = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateCommandPool_func>("vkCreateCommandPool");
             vkCreateFence = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateFence_func>("vkCreateFence");
@@ -270,7 +276,7 @@ namespace Ratchet.Drawing.Vulkan
             VkResult result = vkCreateImageView(_Handle, new IntPtr(&createImageViewInfo_native), ref allocator, new IntPtr(&imageViewHandle));
             if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
 
-            return new VkImageView(imageViewHandle, this);
+            return new VkImageView(imageViewHandle, this, createImageViewInfo.image);
         }
 
         public VkImageView CreateImageView(VkImage image, VkImageViewType viewType, VkFormat format, VkComponentMapping components, VkImageSubresourceRange subresourceRange)
@@ -350,7 +356,7 @@ namespace Ratchet.Drawing.Vulkan
 
             if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
 
-            return new VkImage(imageHandle, this);
+            return new VkImage(imageHandle, this, imageCreateInfo.format);
         }
 
         public unsafe VkImage CreateImage(VkImageCreateFlag flags, VkImageType imageType, VkFormat format, VkExtent3D extent, int mipLevel, int arrayLayers, VkSampleCountFlag samples, VkImageTiling tiling, VkImageUsageFlag usage, VkSharingMode sharingMode, VkQueueFamilyProperties[] queueFamilies, VkImageLayout initialLayout)
@@ -582,7 +588,7 @@ namespace Ratchet.Drawing.Vulkan
             }
 
 
-            if (pipelineLayoutCreateInfo_Native.setLayoutCount == 0)
+            if (pipelineLayoutCreateInfo_Native.pushConstantRangeCount > 0)
             {
                 fixed (VkPushConstantRange* pPushConstRange = &pipelineLayoutCreateInfo.pushConstantRanges[0])
                 {
@@ -654,8 +660,10 @@ namespace Ratchet.Drawing.Vulkan
                 stages_native[n].flags = graphicsPipelineCreateInfo.stages[n].flags;
                 stages_native[n].stage = graphicsPipelineCreateInfo.stages[n].stage;
                 byte[] utf8Name = System.Text.Encoding.UTF8.GetBytes(graphicsPipelineCreateInfo.stages[n].name);
-                stages_native[n].pName = System.Runtime.InteropServices.Marshal.AllocHGlobal(utf8Name.Length);
+                stages_native[n].pName = System.Runtime.InteropServices.Marshal.AllocHGlobal(utf8Name.Length + 1);
                 System.Runtime.InteropServices.Marshal.Copy(utf8Name, 0, stages_native[n].pName, utf8Name.Length);
+                ((byte*)(stages_native[n].pName.ToPointer()))[utf8Name.Length] = 0;
+
                 if (graphicsPipelineCreateInfo.stages[n].specializationInfo.HasValue)
                 {
                     stages_native[n].pSpecializationInfo = System.Runtime.InteropServices.Marshal.AllocHGlobal(new IntPtr(sizeof(VkSpecializationInfo_Native)));
@@ -771,8 +779,16 @@ namespace Ratchet.Drawing.Vulkan
                                 pipelineMultisampleStateCreateInfo_Native.rasterizationSamples = graphicsPipelineCreateInfo.multisampleState.Value.rasterizationSamples;
                                 pipelineMultisampleStateCreateInfo_Native.pSampleMask = new IntPtr(&sampleMask);
                                 UInt32* pSampleMask = (UInt32*)pipelineMultisampleStateCreateInfo_Native.pSampleMask.ToPointer();
-                                if (graphicsPipelineCreateInfo.multisampleState.Value.sampleMask.Length >= 1) { pSampleMask[0] = graphicsPipelineCreateInfo.multisampleState.Value.sampleMask[0]; }
-                                if (graphicsPipelineCreateInfo.multisampleState.Value.sampleMask.Length >= 2) { pSampleMask[1] = graphicsPipelineCreateInfo.multisampleState.Value.sampleMask[1]; }
+                                if (graphicsPipelineCreateInfo.multisampleState.Value.sampleMask == null ||
+                                    graphicsPipelineCreateInfo.multisampleState.Value.sampleMask.Length == 0)
+                                {
+                                    pipelineMultisampleStateCreateInfo_Native.pSampleMask = new IntPtr(0);
+                                }
+                                else
+                                {
+                                    if (graphicsPipelineCreateInfo.multisampleState.Value.sampleMask.Length >= 1) { pSampleMask[0] = graphicsPipelineCreateInfo.multisampleState.Value.sampleMask[0]; }
+                                    if (graphicsPipelineCreateInfo.multisampleState.Value.sampleMask.Length >= 2) { pSampleMask[1] = graphicsPipelineCreateInfo.multisampleState.Value.sampleMask[1]; }
+                                }
                                 graphicsPipelineCreateInfo_Native.pMultisampleState = new IntPtr(&pipelineMultisampleStateCreateInfo_Native);
                             }
                             else { graphicsPipelineCreateInfo_Native.pMultisampleState = new IntPtr(0); }
@@ -930,8 +946,11 @@ namespace Ratchet.Drawing.Vulkan
                 System.Runtime.InteropServices.Marshal.FreeHGlobal(stages_native[n].pName);
                 if (stages_native[n].pSpecializationInfo.ToInt64() == 0)
                 {
-                    System.Runtime.InteropServices.Marshal.FreeHGlobal(((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->pData);
-                    System.Runtime.InteropServices.Marshal.FreeHGlobal(((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->pMapEntries);
+                    if (stages_native[n].pSpecializationInfo.ToInt64() != 0)
+                    {
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->pData);
+                        System.Runtime.InteropServices.Marshal.FreeHGlobal(((VkSpecializationInfo_Native*)stages_native[n].pSpecializationInfo)->pMapEntries);
+                    }
                 }
                 System.Runtime.InteropServices.Marshal.FreeHGlobal(stages_native[n].pSpecializationInfo);
             }
@@ -946,13 +965,13 @@ namespace Ratchet.Drawing.Vulkan
                                                         VkPipelineShaderStageCreateInfo[] stages,
                                                         VkPipelineVertexInputStateCreateInfo vertexInputState,
                                                         VkPipelineInputAssemblyStateCreateInfo inputAssemblyState,
-                                                        VkPipelineTessellationStateCreateInfo tessellationState,
-                                                        VkPipelineViewportStateCreateInfo viewportState,
+                                                        VkPipelineTessellationStateCreateInfo? tessellationState,
+                                                        VkPipelineViewportStateCreateInfo? viewportState,
                                                         VkPipelineRasterizationStateCreateInfo rasterizationState,
-                                                        VkPipelineMultisampleStateCreateInfo multisampleState,
-                                                        VkPipelineDepthStencilStateCreateInfo depthStencilState,
-                                                        VkPipelineColorBlendStateCreateInfo colorBlendState,
-                                                        VkPipelineDynamicStateCreateInfo dynamicState,
+                                                        VkPipelineMultisampleStateCreateInfo? multisampleState,
+                                                        VkPipelineDepthStencilStateCreateInfo? depthStencilState,
+                                                        VkPipelineColorBlendStateCreateInfo? colorBlendState,
+                                                        VkPipelineDynamicStateCreateInfo? dynamicState,
                                                         VkPipelineLayout layout,
                                                         VkRenderPass renderPass,
                                                         UInt32 subpass,
