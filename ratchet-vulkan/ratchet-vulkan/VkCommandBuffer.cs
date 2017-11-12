@@ -220,6 +220,25 @@ namespace Ratchet.Drawing.Vulkan
             _Parent.Device.vkCmdDraw(_Handle, vertexCount, instanceCount, firstVertex, firstInstance);
         }
 
+        public unsafe void CmdBindVertexBuffers(UInt32 firstBinding, VkBuffer[] buffers, UInt64[] offsets)
+        {
+            if (buffers.Length != offsets.Length) { throw new Exception("buffers and offsets must have the same size"); }
+            UInt64[] bufferHandles = new UInt64[buffers.Length];
+            for (int n = 0; n < buffers.Length; n++) { bufferHandles[n] = buffers[n]._Handle; }
+            fixed (UInt64* pBuffers = &bufferHandles[0])
+            {
+                fixed (UInt64* pOffsets = &offsets[0])
+                {
+                    _Parent.Device.vkCmdBindVertexBuffers(_Handle, firstBinding, (uint)buffers.Length, new IntPtr(pBuffers), new IntPtr(pOffsets));
+                }
+            }
+        }
+
+        public unsafe void CmdBindVertexBuffers(UInt32 binding, VkBuffer buffer, UInt64 offset)
+        {
+            CmdBindVertexBuffers(binding, new VkBuffer[] { buffer }, new UInt64[] { offset });
+        }
+
         public void CmdEndRenderPass()
         {
             _Parent.Device.vkCmdEndRenderPass(_Handle);

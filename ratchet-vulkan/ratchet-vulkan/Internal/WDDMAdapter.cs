@@ -11,10 +11,12 @@ namespace Ratchet.Drawing.Vulkan
         string _OpenGLDriver = "";
         string _DeviceId = "";
 
-        IntPtr _OpenGLDriverLibrary = new IntPtr(0);
+        IntPtr _VkDriverLibrary = new IntPtr(0);
         IntPtr _VkGetInstanceProcAddr_ptr = new IntPtr(0);
         delegate IntPtr vkGetInstanceProcAddr_func(IntPtr vkInstance, string Name);
         vkGetInstanceProcAddr_func _vkGetInstanceProcAddr_del;
+
+        Manifest _VkManifest = null;
 
         public string OpenGLDriver { get { return _OpenGLDriver; } }
         public string DeviceId { get { return _DeviceId; } }
@@ -28,12 +30,24 @@ namespace Ratchet.Drawing.Vulkan
         {
             lock (this)
             {
-                if (_OpenGLDriverLibrary.ToInt64() == 0) { _OpenGLDriverLibrary = LoadLibrary(_OpenGLDriver); if (_OpenGLDriverLibrary.ToInt64() == 0) { return default(DelegateType); } }
+                if (_VkDriverLibrary.ToInt64() == 0)
+                {
+                    if (_VkManifest != null && _VkManifest.LibraryPath != "")
+                    {
+                        _VkDriverLibrary = LoadLibrary(_VkManifest.LibraryPath);
+                    }
+                }
+
+                if (_VkDriverLibrary.ToInt64() == 0)
+                {
+                    _VkDriverLibrary = LoadLibrary(_OpenGLDriver); if (_VkDriverLibrary.ToInt64() == 0) { return default(DelegateType); }
+                }
+
                 if (_VkGetInstanceProcAddr_ptr.ToInt64() == 0)
                 {
-                    _VkGetInstanceProcAddr_ptr = GetProcAddress(_OpenGLDriverLibrary, "vkGetInstanceProcAddr");
-                    if (_VkGetInstanceProcAddr_ptr.ToInt64() == 0) { _VkGetInstanceProcAddr_ptr = GetProcAddress(_OpenGLDriverLibrary, "vk_GetInstanceProcAddr"); }
-                    if (_VkGetInstanceProcAddr_ptr.ToInt64() == 0) { _VkGetInstanceProcAddr_ptr = GetProcAddress(_OpenGLDriverLibrary, "vk_icdGetInstanceProcAddr"); }
+                    _VkGetInstanceProcAddr_ptr = GetProcAddress(_VkDriverLibrary, "vkGetInstanceProcAddr");
+                    if (_VkGetInstanceProcAddr_ptr.ToInt64() == 0) { _VkGetInstanceProcAddr_ptr = GetProcAddress(_VkDriverLibrary, "vk_GetInstanceProcAddr"); }
+                    if (_VkGetInstanceProcAddr_ptr.ToInt64() == 0) { _VkGetInstanceProcAddr_ptr = GetProcAddress(_VkDriverLibrary, "vk_icdGetInstanceProcAddr"); }
                     if (_VkGetInstanceProcAddr_ptr.ToInt64() != 0)
                     {
                         _vkGetInstanceProcAddr_del = System.Runtime.InteropServices.Marshal.GetDelegateForFunctionPointer<vkGetInstanceProcAddr_func>(_VkGetInstanceProcAddr_ptr);
@@ -43,9 +57,10 @@ namespace Ratchet.Drawing.Vulkan
             }
         }
 
-        public WDDMAdapter(string DeviceId, string OpenGLDriver)
+        public WDDMAdapter(string DeviceId, string OpenGLDriver, Manifest vulkanManifest)
         {
             _OpenGLDriver = OpenGLDriver;
+            _VkManifest = vulkanManifest;
             _DeviceId = DeviceId;
         }
 
@@ -76,6 +91,135 @@ namespace Ratchet.Drawing.Vulkan
             if (WDDMAdapterKey == null) { return ""; }
             try { return getStringValue(WDDMAdapterKey, "MatchingDeviceId").ToLower(); } catch { }
             return "";
+        }
+
+        static Manifest[] getWDDMAdapterVulkanDriverManifests(Microsoft.Win32.RegistryKey WDDMAdapterKey)
+        {
+            string[] files = getWDDMAdapterVulkanDriverManifestsFiles(WDDMAdapterKey);
+            List<Manifest> parsedManifest = new List<Manifest>();
+            foreach (string manifestFile in files)
+            {
+                parsedManifest.Add(new Manifest(manifestFile));
+            }
+            return parsedManifest.ToArray();
+        }
+
+        static string[] getWDDMAdapterVulkanDriverManifestsFiles(Microsoft.Win32.RegistryKey WDDMAdapterKey)
+        {
+            List<string> manifests = new List<string>();
+            if (WDDMAdapterKey == null) { return new string[0]; }
+            try
+            {
+                try
+                {
+                    if (!System.Environment.Is64BitProcess)
+                    {
+                        string vkDriverName = getStringValue(WDDMAdapterKey, "VulkanDriverNameWoW").Trim();
+                        if (!vkDriverName.ToLower().EndsWith(".json")) { vkDriverName += ".json"; }
+                        if (vkDriverName != "")
+                        {
+                            try { if (System.IO.File.Exists("C:/Windows/Syswow64/" + vkDriverName)) { manifests.Add("C:/Windows/Syswow64/" + vkDriverName); return manifests.ToArray(); } } catch { }
+                            try { if (System.IO.File.Exists("C:/Windows/System32/" + vkDriverName)) { manifests.Add("C:/Windows/System32/" + vkDriverName); return manifests.ToArray(); } } catch { }
+                            try { if (System.IO.File.Exists(vkDriverName)) { manifests.Add(vkDriverName); return manifests.ToArray(); } } catch { }
+                        }
+                    }
+                }
+                catch { }
+
+                {
+                    string vkDriverName = ((string[])WDDMAdapterKey.GetValue("VulkanDriverName"))[0].Trim();
+                    if (!vkDriverName.ToLower().EndsWith(".json")) { vkDriverName += ".json"; }
+                    if (vkDriverName != "")
+                    {
+                        try { if (System.IO.File.Exists("C:/Windows/System32/" + vkDriverName)) { manifests.Add("C:/Windows/System32/" + vkDriverName); return manifests.ToArray(); } } catch { }
+                        try { if (System.IO.File.Exists(vkDriverName)) { manifests.Add(vkDriverName); return manifests.ToArray(); } } catch { }
+                    }
+                }
+            }
+            catch { }
+
+
+            // If the WDDM Adapter has no specified vulkan driver key we will look at the system wide key
+
+            try
+            {
+                Microsoft.Win32.RegistryKey SoftwareKey = Microsoft.Win32.Registry.LocalMachine.OpenSubKey("SOFTWARE");
+                string driver = "";
+
+                if (!System.Environment.Is64BitProcess)
+                {
+                    try
+                    {
+                        Microsoft.Win32.RegistryKey WOWKey = SoftwareKey.OpenSubKey("WOW6432Node");
+                        Microsoft.Win32.RegistryKey KhronosKey = WOWKey.OpenSubKey("Khronos");
+                        if (KhronosKey != null)
+                        {
+                            Microsoft.Win32.RegistryKey VulkanKey = KhronosKey.OpenSubKey("Vulkan");
+                            if (VulkanKey != null)
+                            {
+                                Microsoft.Win32.RegistryKey DriversKey = VulkanKey.OpenSubKey("Drivers");
+                                foreach (string key in DriversKey.GetValueNames())
+                                {
+                                    if (System.IO.File.Exists(key))
+                                    {
+                                        try
+                                        {
+                                            if ((int)DriversKey.GetValue(key) == 0)
+                                            {
+                                                manifests.Add(key);
+                                            }
+                                        }
+                                        catch { }
+                                    }
+                                }
+                                DriversKey.Close();
+                                VulkanKey.Close();
+                            }
+                            KhronosKey.Close();
+                        }
+                        WOWKey.Close();
+                    }
+                    catch { }
+                }
+
+                if (manifests.Count == 0)
+                {
+                    try
+                    {
+                        Microsoft.Win32.RegistryKey KhronosKey = SoftwareKey.OpenSubKey("Khronos");
+                        if (KhronosKey != null)
+                        {
+                            Microsoft.Win32.RegistryKey VulkanKey = KhronosKey.OpenSubKey("Vulkan");
+                            if (VulkanKey != null)
+                            {
+                                Microsoft.Win32.RegistryKey DriversKey = VulkanKey.OpenSubKey("Drivers");
+                                foreach (string key in DriversKey.GetValueNames())
+                                {
+                                    if (System.IO.File.Exists(key))
+                                    {
+                                        try
+                                        {
+                                            if ((int)DriversKey.GetValue(key) == 0)
+                                            {
+                                                manifests.Add(key);
+                                            }
+                                        }
+                                        catch { }
+                                    }
+                                }
+                                DriversKey.Close();
+                                VulkanKey.Close();
+                            }
+                            KhronosKey.Close();
+                        }
+                    }
+                    catch { }
+                }
+                SoftwareKey.Close();
+            }
+            catch { }
+
+            return manifests.ToArray();
         }
 
         static string getWDDMAdapterOpenGLDriver(Microsoft.Win32.RegistryKey WDDMAdapterKey)
@@ -110,6 +254,7 @@ namespace Ratchet.Drawing.Vulkan
                 }
             }
             catch { }
+
             return "";
         }
 
@@ -133,9 +278,18 @@ namespace Ratchet.Drawing.Vulkan
                             Microsoft.Win32.RegistryKey WDDMAdapterKey = WDDMAdaptersKey.OpenSubKey(adapterKeyName);
                             string deviceId = getWDDMAdapterDeviceId(WDDMAdapterKey);
                             string openGLDriver = getWDDMAdapterOpenGLDriver(WDDMAdapterKey);
-                            if (deviceId != "" && openGLDriver != "")
+                            Manifest[] vulkanDriverManifests = getWDDMAdapterVulkanDriverManifests(WDDMAdapterKey);
+
+                            if (deviceId != "" && (openGLDriver != "" || vulkanDriverManifests.Length > 0))
                             {
-                                adapters.Add(new WDDMAdapter(deviceId, openGLDriver));
+                                Manifest manifest = null;
+                                // For now pick the first manifest. Ultimatly we might preffer the one that is in the driver store and math the adapter driver
+                                if (vulkanDriverManifests.Length >= 1)
+                                {
+                                    manifest = vulkanDriverManifests[0];
+                                }
+
+                                adapters.Add(new WDDMAdapter(deviceId, openGLDriver, manifest));
                             }
                         }
                         catch { }

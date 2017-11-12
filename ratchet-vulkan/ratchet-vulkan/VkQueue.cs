@@ -23,6 +23,12 @@ namespace Ratchet.Drawing.Vulkan
             _QueueFamily = QueueFamily;
         }
 
+        public unsafe void WaitIdle()
+        {
+            VkResult  result = _Parent.vkQueueWaitIdle(_Handle);
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+        }
+
         public unsafe void Submit(VkSubmitInfo[] submitInfo, VkFence Fence)
         {
             if (submitInfo == null || submitInfo.Length == 0) { return; }

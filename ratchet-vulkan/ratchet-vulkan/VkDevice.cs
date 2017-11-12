@@ -23,6 +23,10 @@ namespace Ratchet.Drawing.Vulkan
         internal vkBeginCommandBuffer_func vkBeginCommandBuffer;
         internal delegate VkResult vkBindImageMemory_func(IntPtr deviceHandle, UInt64 imageHandle, UInt64 memoryHandle, UInt64 memoryOffset);
         internal vkBindImageMemory_func vkBindImageMemory;
+        internal delegate VkResult vkBindBufferMemory_func(IntPtr deviceHandle, UInt64 bufferHandle, UInt64 memoryHandle, UInt64 memoryOffset);
+        internal vkBindBufferMemory_func vkBindBufferMemory;
+        internal delegate VkResult vkCmdBindVertexBuffers_func(IntPtr commandBuffer, UInt32 firstBinding, UInt32 bindingCount, IntPtr pBuffers, IntPtr pOffsets);
+        internal vkCmdBindVertexBuffers_func vkCmdBindVertexBuffers;
         internal delegate VkResult vkCmdClearColorImage_Float_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearValue.VkClearColorValue.Float_s pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_Float_func vkCmdClearColorImage_Float;
         internal delegate VkResult vkCmdClearColorImage_Int32_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearValue.VkClearColorValue.Int32_t_s pColor, UInt32 rangeCount, IntPtr pRanges);
@@ -39,6 +43,8 @@ namespace Ratchet.Drawing.Vulkan
         internal vkCmdDraw_func vkCmdDraw;
         internal delegate void vkCmdSetViewport_func(IntPtr commandBuffer, UInt32 firstViewport, UInt32 viewportCount, IntPtr pViewports);
         internal vkCmdSetViewport_func vkCmdSetViewport;
+        internal delegate VkResult vkCreateBuffer_func(IntPtr deviceHandle, IntPtr pAllocateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pBuffer);
+        internal vkCreateBuffer_func vkCreateBuffer;
         internal delegate VkResult vkCreateCommandPool_func(IntPtr deviceHandle, IntPtr pAllocateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pCommandPoolHandle);
         internal vkCreateCommandPool_func vkCreateCommandPool;
         internal delegate VkResult vkCreateFence_func(IntPtr deviceHandle, IntPtr pCreateInfo, ref VkAllocationCallbacks pAllocator, IntPtr pFenceHandle);
@@ -63,6 +69,8 @@ namespace Ratchet.Drawing.Vulkan
         internal vkEndCommandBuffer_func vkEndCommandBuffer;
         internal delegate VkResult vkGetFenceStatus_func(IntPtr deviceHandle, UInt64 fenceHandle);
         internal vkGetFenceStatus_func vkGetFenceStatus;
+        internal delegate VkResult vkGetBufferMemoryRequirements_func(IntPtr deviceHandle, UInt64 bufferHandle, IntPtr pMemoryRequirements);
+        internal vkGetBufferMemoryRequirements_func vkGetBufferMemoryRequirements;
         internal delegate VkResult vkGetImageMemoryRequirements_func(IntPtr deviceHandle, UInt64 imageHandle, IntPtr pMemoryRequirements);
         internal vkGetImageMemoryRequirements_func vkGetImageMemoryRequirements;
         internal delegate VkResult vkMapMemory_func(IntPtr deviceHandle, UInt64 memory, UInt64 offset, UInt64 size, VkMemoryMapFlag flags, IntPtr ppData);
@@ -73,7 +81,10 @@ namespace Ratchet.Drawing.Vulkan
         internal vkWaitForFences_func vkWaitForFences;
         internal delegate void vkGetDeviceQueue_func(IntPtr device, UInt32 queueFamilyIndex, UInt32 queueIndex, ref IntPtr pQueue);
         internal vkGetDeviceQueue_func vkGetDeviceQueue;
-
+        internal delegate VkResult vkQueueWaitIdle_func(IntPtr pQueue);
+        internal vkQueueWaitIdle_func vkQueueWaitIdle;
+        internal delegate VkResult vkDeviceWaitIdle_func(IntPtr pQueue);
+        internal vkDeviceWaitIdle_func vkDeviceWaitIdle;
 
         internal VkDevice(VkPhysicalDevice PhysicalDevice, IntPtr Handle, VkDeviceQueueCreateInfo[] queueCreateInfo)
         {
@@ -82,6 +93,7 @@ namespace Ratchet.Drawing.Vulkan
             vkAllocateMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkAllocateMemory_func>("vkAllocateMemory");
             vkAllocateCommandBuffers = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkAllocateCommandBuffers_func>("vkAllocateCommandBuffers");
             vkBeginCommandBuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkBeginCommandBuffer_func>("vkBeginCommandBuffer");
+            vkBindBufferMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkBindBufferMemory_func>("vkBindBufferMemory");
             vkBindImageMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkBindImageMemory_func>("vkBindImageMemory");
             vkCmdBeginRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdBeginRenderPass_func>("vkCmdBeginRenderPass");
             vkCmdBindPipeline = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdBindPipeline_func>("vkCmdBindPipeline");
@@ -91,6 +103,7 @@ namespace Ratchet.Drawing.Vulkan
             vkCmdEndRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdEndRenderPass_func>("vkCmdEndRenderPass");
             vkCmdDraw = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdDraw_func>("vkCmdDraw");
             vkCmdSetViewport = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdSetViewport_func>("vkCmdSetViewport");
+            vkCreateBuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateBuffer_func>("vkCreateBuffer");
             vkCreateCommandPool = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateCommandPool_func>("vkCreateCommandPool");
             vkCreateFence = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateFence_func>("vkCreateFence");
             vkCreateFramebuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCreateFramebuffer_func>("vkCreateFramebuffer");
@@ -104,10 +117,14 @@ namespace Ratchet.Drawing.Vulkan
             vkEndCommandBuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkEndCommandBuffer_func>("vkEndCommandBuffer");
             vkGetFenceStatus = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetFenceStatus_func>("vkGetFenceStatus");
             vkGetDeviceQueue = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetDeviceQueue_func>("vkGetDeviceQueue");
+            vkGetBufferMemoryRequirements = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetBufferMemoryRequirements_func>("vkGetBufferMemoryRequirements");
             vkGetImageMemoryRequirements = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkGetImageMemoryRequirements_func>("vkGetImageMemoryRequirements");
             vkMapMemory = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkMapMemory_func>("vkMapMemory");
             vkQueueSubmit = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkQueueSubmit_func>("vkQueueSubmit");
             vkWaitForFences = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkWaitForFences_func>("vkWaitForFences");
+            vkQueueWaitIdle = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkQueueWaitIdle_func>("vkQueueWaitIdle");
+            vkDeviceWaitIdle = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkDeviceWaitIdle_func>("vkDeviceWaitIdle");
+
 
             List<VkQueue> queues = new List<VkQueue>();
             for (int n = 0; n< queueCreateInfo.Length; n++)
@@ -158,7 +175,49 @@ namespace Ratchet.Drawing.Vulkan
             return AllocateMemory(ref allocateInfo);
         }
 
-        public unsafe VkCommandPool CreateCommandPool(ref VkCommandPoolCreateInfo commandPoolCreateInfo)
+        public unsafe VkBuffer CreateBuffer(ref VkBufferCreateInfo createInfo)
+        {
+            UInt64 handle;
+            VkBufferCreateInfo_Native createInfo_Native = new VkBufferCreateInfo_Native();
+            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+
+            createInfo_Native.sType = VkStructureType.VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            createInfo_Native.pNext = new IntPtr(0);
+            createInfo_Native.flags = createInfo.flags;
+            createInfo_Native.size = createInfo.size;
+            createInfo_Native.sharingMode = createInfo.sharingMode;
+            createInfo_Native.usage = createInfo.usage;
+            createInfo_Native.queueFamilyIndexCount = (UInt32)createInfo.queueFamilies.Length;
+
+            UInt32[] queueFamilyIndices = new UInt32[createInfo.queueFamilies.Length];
+            for (int n = 0; n < queueFamilyIndices.Length; n++)
+            {
+                queueFamilyIndices[n] = createInfo.queueFamilies[n].index;
+            }
+            VkResult result = VkResult.VK_SUCCESS;
+            fixed (UInt32* pQueueFamilyIndices = &queueFamilyIndices[0])
+            {
+                createInfo_Native.pQueueFamilyIndices = new IntPtr(pQueueFamilyIndices);
+                result = vkCreateBuffer(_Handle, new IntPtr(&createInfo_Native),ref allocator, new IntPtr(&handle));
+            }
+
+            if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
+
+            VkBuffer VkBuffer = new VkBuffer(this, handle);
+            return VkBuffer;
+        }
+ 
+        public VkBuffer CreateBuffer(VkBufferCreateFlag flags, UInt64 size, VkBufferUsageFlag usage, VkSharingMode sharingMode, VkQueueFamilyProperties[] queueFamilies)
+        {
+            VkBufferCreateInfo createInfo = new VkBufferCreateInfo();
+            createInfo.flags = flags;
+            createInfo.size = size;
+            createInfo.sharingMode = sharingMode;
+            createInfo.queueFamilies = queueFamilies;
+            return CreateBuffer(ref createInfo);
+        }
+
+            public unsafe VkCommandPool CreateCommandPool(ref VkCommandPoolCreateInfo commandPoolCreateInfo)
         {
             UInt64 commandPoolHandle = 0;
             VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
