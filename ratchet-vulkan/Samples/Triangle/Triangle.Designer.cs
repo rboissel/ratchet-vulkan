@@ -39,6 +39,7 @@
             this.Text = "Triangle";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Triangle_Paint);
+            this.Resize += new System.EventHandler(this.Triangle_Resize);
             this.ResumeLayout(false);
 
         }

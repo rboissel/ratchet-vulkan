@@ -71,6 +71,16 @@ namespace Ratchet.Drawing.Vulkan
             {
                 drivers.Add(adapter._OpenGLDriver);
             }
+            
+            // Last chance if we have found nothing go with the system loader
+            if (drivers.Count == 0)
+            {
+                if (System.IO.File.Exists("C:\\Windows\\System32\\vulkan-1.dll"))
+                {
+                    drivers.Add("C:\\Windows\\System32\\vulkan-1.dll");
+                }
+            }
+
             return new List<string>(drivers).ToArray();
         }
 

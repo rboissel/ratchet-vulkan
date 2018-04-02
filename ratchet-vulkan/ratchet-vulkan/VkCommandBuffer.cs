@@ -129,6 +129,14 @@ namespace Ratchet.Drawing.Vulkan
             CmdClearColorImage(Image, ImageLayout, ref color, Ranges);
         }
 
+        public unsafe void cmdCopyImageToBuffer(VkImage SrcImage, VkImageLayout ImageLayout, VkBuffer DstBuffer, VkBufferImageCopy[] Regions)
+        {
+            fixed (VkBufferImageCopy* pRegions = &Regions[0])
+            {
+                _Parent.Device.vkCmdCopyImageToBuffer(_Handle, SrcImage._Handle, ImageLayout, DstBuffer._Handle, (uint)Regions.Length, new IntPtr(pRegions));
+            }
+        }
+
         public unsafe void CmdBeginRenderPass(ref VkRenderPassBeginInfo renderPassBegin, VkSubpassContents contents)
         {
             VkRenderPassBeginInfo_Native renderPassBegin_native = new VkRenderPassBeginInfo_Native();

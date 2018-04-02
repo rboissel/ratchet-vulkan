@@ -30,26 +30,24 @@ namespace Triangle
 
             VkPipelineRasterizationStateCreateInfo rasterizationInfo = new VkPipelineRasterizationStateCreateInfo();
             rasterizationInfo.flags = VkPipelineRasterizationStateCreateFlag.NONE;
-            rasterizationInfo.depthClampEnable = true;
+            rasterizationInfo.depthClampEnable = false;
             rasterizationInfo.rasterizerDiscardEnable = false;
             rasterizationInfo.polygonMode = VkPolygonMode.VK_POLYGON_MODE_FILL;
             rasterizationInfo.lineWidth = 1.0f;
-            rasterizationInfo.cullMode = VkCullModeFlag.VK_CULL_MODE_NONE;
+            rasterizationInfo.cullMode = VkCullModeFlag.VK_CULL_MODE_BACK;
+            rasterizationInfo.frontFace = VkFrontFace.VK_FRONT_FACE_CLOCKWISE;
             rasterizationInfo.depthBiasEnable = false;
 
             VkPipelineMultisampleStateCreateInfo multisamplingInfo = new VkPipelineMultisampleStateCreateInfo();
             multisamplingInfo.flags = VkPipelineMultisampleStateCreateFlag.NONE;
             multisamplingInfo.sampleShadingEnable = false;
-            multisamplingInfo.sampleMask = null;
             multisamplingInfo.rasterizationSamples = VkSampleCountFlag.VK_SAMPLE_COUNT_1;
-            multisamplingInfo.minSampleShading = 1.0f;
-            multisamplingInfo.alphaToCoverageEnable = false;
-            multisamplingInfo.alphaToOneEnable = false;
 
             VkPipelineColorBlendStateCreateInfo colorBlendingInfo = new VkPipelineColorBlendStateCreateInfo();
             colorBlendingInfo.flags = VkPipelineColorBlendStateCreateFlag.NONE;
             colorBlendingInfo.logicOpEnable = false;
-            colorBlendingInfo.attachments = new VkPipelineColorBlendAttachmentState[] { new VkPipelineColorBlendAttachmentState() { blendEnable = 0 } };
+            colorBlendingInfo.logicOp = VkLogicOp.VK_LOGIC_OP_COPY;
+            colorBlendingInfo.attachments = new VkPipelineColorBlendAttachmentState[] { new VkPipelineColorBlendAttachmentState() { colorWriteMask = VkColorComponentFlag.VK_COLOR_COMPONENT_R | VkColorComponentFlag.VK_COLOR_COMPONENT_G | VkColorComponentFlag.VK_COLOR_COMPONENT_B | VkColorComponentFlag.VK_COLOR_COMPONENT_A, blendEnable = 0 } };
             _Pipeline = Framebuffer.Device.CreateGraphicsPipeline(null, VkPipelineCreateFlags.NONE,
                                                                   new VkPipelineShaderStageCreateInfo[] { new VkPipelineShaderStageCreateInfo(VertexShader, VertexShaderEntryPoint, VkShaderStageFlag.VK_SHADER_STAGE_VERTEX), new VkPipelineShaderStageCreateInfo(FragmentShader, FragmentShaderEntryPoint, VkShaderStageFlag.VK_SHADER_STAGE_FRAGMENT) },
                                                                   vertexInputInfo,
@@ -57,15 +55,15 @@ namespace Triangle
                                                                   null,
                                                                   viewportInfo,
                                                                   rasterizationInfo,
+                                                                  multisamplingInfo,
                                                                   null,
-                                                                  null,
-                                                                  null,
+                                                                  colorBlendingInfo,
                                                                   null,
                                                                   PipelineLayout,
                                                                   Framebuffer.RenderPass,
                                                                   0,
-                                                                  null,
-                                                                  0
+                                                                  null, 
+                                                                  -1
                                                                   );
         }
 

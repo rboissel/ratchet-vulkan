@@ -28,7 +28,7 @@ namespace Ratchet.Drawing.Vulkan
         public UInt64 renderPass;
         public UInt32 subpass;
         public UInt64 basePipelineHandle;
-        public UInt32 basePipelineIndex;
+        public Int32 basePipelineIndex;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -49,6 +49,6 @@ namespace Ratchet.Drawing.Vulkan
         public VkRenderPass renderPass;
         public UInt32 subpass;
         public VkPipeline basePipeline;
-        public UInt32 basePipelineIndex;
+        public Int32 basePipelineIndex;
     }
 }

@@ -80,6 +80,10 @@ namespace Triangle
             // Finally we will need a fence for our submission in order to wait on it
             _Fence = _Device.CreateFence(VkFenceCreateFlag.NONE);
 
+            // VkBuffer indexBuffer = _Device.CreateBuffer(0, 3 * sizeof(Int32), VkBufferUsageFlag.VK_BUFFER_USAGE_INDEX_BUFFER, VkSharingMode.VK_SHARING_MODE_CONCURRENT, new VkQueueFamilyProperties[] { _Queue.Family });
+            // VkBuffer vertexBuffer = _Device.CreateBuffer(0, 3 * sizeof(float), VkBufferUsageFlag.VK_BUFFER_USAGE_VERTEX_BUFFER, VkSharingMode.VK_SHARING_MODE_CONCURRENT, new VkQueueFamilyProperties[] { _Queue.Family });
+
+
             // Now we need to create a command buffer and we will fill it with a single command:
             //   Fill the image with the color (0.1f, 0.75f, 1.0f, 1.0f) which is a Sky blue.
             VkClearValue.VkClearColorValue.Float color = new VkClearValue.VkClearColorValue.Float();
@@ -89,14 +93,28 @@ namespace Triangle
             _CommandBuffer = Pool.AllocateCommandBuffer(VkCommandBufferLevel.VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             _CommandBuffer.Begin(VkCommandBufferUsageFlag.NONE);
             _CommandBuffer.CmdBeginRenderPass(_Framebuffer.RenderPass,
-                                    new VkRect2D(0, 0, (uint)640, (uint)480),
-                                    _Framebuffer.GetFramebuffer(),
-                                    new VkClearValue[] {  color  },
-                                    VkSubpassContents.VK_SUBPASS_CONTENTS_INLINE);
+                                              new VkRect2D(0, 0, (uint)640, (uint)480),
+                                              _Framebuffer.GetFramebuffer(),
+                                              new VkClearValue[] {  color  },
+                                              VkSubpassContents.VK_SUBPASS_CONTENTS_INLINE);
 
             _GraphicsPipeline.BindPipeline(_CommandBuffer);
             _CommandBuffer.CmdDraw(3, 1, 0, 0);
             _CommandBuffer.CmdEndRenderPass();
+            _CommandBuffer.cmdCopyImageToBuffer(_Framebuffer.FrameBufferColor,
+                                                VkImageLayout.VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+                                                _Framebuffer._TransferBuffer,
+                                                new VkBufferImageCopy[] 
+                                                {
+                                                    new VkBufferImageCopy()
+                                                    {
+                                                        bufferImageHeight = (uint)_Framebuffer.Height,
+                                                        bufferOffset = 0,
+                                                        bufferRowLength = (uint)_Framebuffer.Width,
+                                                        imageExtent = new VkExtent3D() { depth = 1, width = (uint)_Framebuffer.Width, height = (uint)_Framebuffer.Height },
+                                                        imageSubresource = new VkImageSubresourceLayers() { aspectMask = VkImageAspectFlag.VK_IMAGE_ASPECT_COLOR_BIT, baseArrayLayer = 0, layerCount = 1, mipLevel = 0  }
+                                                    }
+                                                });
             _CommandBuffer.End();
         }
 
@@ -120,10 +138,19 @@ namespace Triangle
             if (_Fence.WaitForFence(1000))
             {
                 // If the submission completed we copy the image data into the bitmap data
-                _Framebuffer.BlitFramebufferToPointer(bitmapData.Scan0);
+                _Framebuffer.BlitFramebufferToPointer(_Queue, bitmapData.Scan0);
+            }
+            else
+            {
+                this.Invalidate();
             }
             _Bitmap.UnlockBits(bitmapData);
             e.Graphics.DrawImage(_Bitmap, new Rectangle(0, 0, Width, Height));
+        }
+
+        private void Triangle_Resize(object sender, EventArgs e)
+        {
+            this.Invalidate();
         }
     }
 }

@@ -12,10 +12,15 @@ namespace Ratchet.Drawing.Vulkan
     {
         internal UInt64 _Handle;
         internal VkDevice _Parent;
-        internal VkDeviceMemory(UInt64 Handle, VkDevice Device)
+        public VkDevice Device { get { return _Parent; } }
+        VkMemoryType _Type;
+        public VkMemoryType MemoryType { get { return _Type; } }
+
+        internal VkDeviceMemory(VkMemoryType Type, UInt64 Handle, VkDevice Device)
         {
             _Parent = Device;
             _Handle = Handle;
+            _Type = Type;
         }
         public unsafe IntPtr Map(UInt64 offset, UInt64 size, VkMemoryMapFlag flags)
         {

@@ -27,12 +27,15 @@ namespace Ratchet.Drawing.Vulkan
         internal vkBindBufferMemory_func vkBindBufferMemory;
         internal delegate VkResult vkCmdBindVertexBuffers_func(IntPtr commandBuffer, UInt32 firstBinding, UInt32 bindingCount, IntPtr pBuffers, IntPtr pOffsets);
         internal vkCmdBindVertexBuffers_func vkCmdBindVertexBuffers;
+
         internal delegate VkResult vkCmdClearColorImage_Float_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearValue.VkClearColorValue.Float_s pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_Float_func vkCmdClearColorImage_Float;
         internal delegate VkResult vkCmdClearColorImage_Int32_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearValue.VkClearColorValue.Int32_t_s pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_Int32_func vkCmdClearColorImage_Int32;
         internal delegate VkResult vkCmdClearColorImage_UInt32_func(IntPtr commandBuffer, UInt64 image, VkImageLayout imageLayout, ref VkClearValue.VkClearColorValue.UInt32_t_s pColor, UInt32 rangeCount, IntPtr pRanges);
         internal vkCmdClearColorImage_UInt32_func vkCmdClearColorImage_UInt32;
+        internal delegate VkResult vkCmdCopyImageToBuffer_func(IntPtr commandBuffer, UInt64 srcImage, VkImageLayout imageLayout, UInt64 dstBuffer, UInt32 regionCount, IntPtr pRegions);
+        internal vkCmdCopyImageToBuffer_func vkCmdCopyImageToBuffer;
         internal delegate void vkCmdBeginRenderPass_func(IntPtr commandBuffer, IntPtr pRenderPassBegin, VkSubpassContents contents);
         internal vkCmdBeginRenderPass_func vkCmdBeginRenderPass;
         internal delegate void vkCmdBindPipeline_func(IntPtr commandBuffer, VkPipelineBindPoint pipelineBindPoint, UInt64 pipeline);
@@ -100,6 +103,7 @@ namespace Ratchet.Drawing.Vulkan
             vkCmdClearColorImage_Float = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Float_func>("vkCmdClearColorImage");
             vkCmdClearColorImage_Int32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_Int32_func>("vkCmdClearColorImage");
             vkCmdClearColorImage_UInt32 = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdClearColorImage_UInt32_func>("vkCmdClearColorImage");
+            vkCmdCopyImageToBuffer = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdCopyImageToBuffer_func>("vkCmdCopyImageToBuffer");
             vkCmdEndRenderPass = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdEndRenderPass_func>("vkCmdEndRenderPass");
             vkCmdDraw = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdDraw_func>("vkCmdDraw");
             vkCmdSetViewport = PhysicalDevice._ParentInstance.vkGetInstanceProcAddr<vkCmdSetViewport_func>("vkCmdSetViewport");
@@ -153,7 +157,7 @@ namespace Ratchet.Drawing.Vulkan
                 allocateInfo_native.pNext = new IntPtr(0);
                 VkResult result = vkAllocateMemory(_Handle, new IntPtr(&allocateInfo_native), ref allocator, new IntPtr(&deviceMemoryHandle));
                 if (result != VkResult.VK_SUCCESS) { throw new Exception(result.ToString()); }
-                VkDeviceMemory deviceMemory = new VkDeviceMemory(deviceMemoryHandle, this);
+                VkDeviceMemory deviceMemory = new VkDeviceMemory(allocateInfo.memoryType, deviceMemoryHandle, this);
                 return deviceMemory;
             }
             else { throw new NotImplementedException(); }
@@ -214,6 +218,7 @@ namespace Ratchet.Drawing.Vulkan
             createInfo.size = size;
             createInfo.sharingMode = sharingMode;
             createInfo.queueFamilies = queueFamilies;
+            createInfo.usage = usage;
             return CreateBuffer(ref createInfo);
         }
 
@@ -377,7 +382,12 @@ namespace Ratchet.Drawing.Vulkan
         {
             UInt64 imageHandle = 0;
 
-            VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
+            if (imageCreateInfo.initialLayout != VkImageLayout.VK_IMAGE_LAYOUT_UNDEFINED && imageCreateInfo.initialLayout != VkImageLayout.VK_IMAGE_LAYOUT_PREINITIALIZED)
+            {
+                throw new Exception("with CreateImage initialLayout must be VK_IMAGE_LAYOUT_UNDEFINED or VK_IMAGE_LAYOUT_PREINITIALIZED");
+            }
+
+           VkAllocationCallbacks allocator = Allocator.getAllocatorCallbacks();
 
             VkImageCreateInfo_Native imageCreateInfo_Native = new VkImageCreateInfo_Native();
             imageCreateInfo_Native.pNext = new IntPtr(0);
@@ -850,7 +860,10 @@ namespace Ratchet.Drawing.Vulkan
                                 }
                                 graphicsPipelineCreateInfo_Native.pMultisampleState = new IntPtr(&pipelineMultisampleStateCreateInfo_Native);
                             }
-                            else { graphicsPipelineCreateInfo_Native.pMultisampleState = new IntPtr(0); }
+                            else
+                            {
+                                graphicsPipelineCreateInfo_Native.pMultisampleState = new IntPtr(0);
+                            }
 
                             {
                                 VkPipelineDepthStencilStateCreateInfo_Native pipelineDepthStencilStateCreateInfo_Native = new VkPipelineDepthStencilStateCreateInfo_Native();
@@ -1035,7 +1048,7 @@ namespace Ratchet.Drawing.Vulkan
                                                         VkRenderPass renderPass,
                                                         UInt32 subpass,
                                                         VkPipeline basePipeline,
-                                                        UInt32 basePipelineIndex)
+                                                        Int32 basePipelineIndex)
         {
             VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = new VkGraphicsPipelineCreateInfo();
 
