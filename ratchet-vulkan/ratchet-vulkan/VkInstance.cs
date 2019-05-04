@@ -9,9 +9,6 @@ namespace Ratchet.Drawing.Vulkan
     public class VkInstance
     {
         delegate VkResult vkCreateInstance_func(ref VkInstanceCreateInfo_Native createInfo, ref VkAllocationCallbacks allocationCallbacks, IntPtr pInstance);
-        static List<WDDMAdapter> WDDMAdapters = new List<WDDMAdapter>();
-        static List<string> WDDMCompatibleDrivers = new List<string>();
-
         List<VkSubInstance> VkSubInstances = new List<VkSubInstance>();
 
         abstract internal unsafe class VkSubInstance
@@ -64,35 +61,33 @@ namespace Ratchet.Drawing.Vulkan
                 }
             }
         }
-        // We abtract a global instance by creating one subinstance per driver vendor
 
-        unsafe class VkWDDMSubInstance : VkSubInstance
+        unsafe class VkWin32SubInstance : VkSubInstance
         {
+            internal win32Loader _Win32Loader;
             internal IntPtr _VkInstanceHandle;
-            WDDMAdapter _WDDMMainAdapter;
 
             public override IntPtr vkInstanceHandle { get { return _VkInstanceHandle; } }
 
-            public VkWDDMSubInstance(IntPtr VkInstanceHandle, WDDMAdapter WDDMMainAdapter)
+            public VkWin32SubInstance(IntPtr VkInstanceHandle, win32Loader win32Loader)
             {
-                _WDDMMainAdapter = WDDMMainAdapter;
                 _VkInstanceHandle = VkInstanceHandle;
-
+                _Win32Loader = win32Loader;
             }
 
             public override T vkGetInstanceProcAddr<T>(string Name)
             {
-                return _WDDMMainAdapter.vkGetInstanceProcAddr<T>(_VkInstanceHandle, Name);
+                return _win32Loader.vkGetInstanceProcAddr<T>(_VkInstanceHandle, Name);
             }
-
-
         }
+
+        static win32Loader _win32Loader = null;
 
         static VkInstance()
         {
-            lock (WDDMAdapters)
+            if (System.Environment.OSVersion.Platform == PlatformID.Win32NT)
             {
-                WDDMAdapters = WDDMAdapter.getWDDMAdapters();
+                _win32Loader = new win32Loader();
             }
         }
 
@@ -116,24 +111,16 @@ namespace Ratchet.Drawing.Vulkan
             createInfo_native.enabledLayerCount = (UInt32)(createInfo.enabledLayerNames != null ? createInfo.enabledLayerNames.Length : 0);
             createInfo_native.applicationInfo = new IntPtr(&applicationInfo_native);
 
-            HashSet<string> WDDMCompatibleDriversHashMap = new HashSet<string>();
-
-            foreach (WDDMAdapter adapter in WDDMAdapters)
+            if (_win32Loader != null)
             {
-                if (!WDDMCompatibleDriversHashMap.Contains(adapter.OpenGLDriver))
+                IntPtr VkInstanceHandle;
+
+                vkCreateInstance_func vkCreateInstance = _win32Loader.vkGetInstanceProcAddr<vkCreateInstance_func>(new IntPtr(0), "vkCreateInstance");
+                VkResult result = vkCreateInstance(ref createInfo_native, ref allocationCallbacks, new IntPtr(&VkInstanceHandle));
+                if (result == VkResult.VK_SUCCESS)
                 {
-                    WDDMCompatibleDriversHashMap.Add(adapter.OpenGLDriver);
-                    vkCreateInstance_func vkCreateInstance = adapter.vkGetInstanceProcAddr<vkCreateInstance_func>(new IntPtr(0), "vkCreateInstance");
-                    if (vkCreateInstance != null)
-                    {
-                        IntPtr VkInstanceHandle;
-                        VkResult result = vkCreateInstance(ref createInfo_native, ref allocationCallbacks, new IntPtr(&VkInstanceHandle));
-                        if (result == VkResult.VK_SUCCESS)
-                        {
-                            VkSubInstance VkSubInstance = new VkWDDMSubInstance(VkInstanceHandle, adapter);
-                            VkSubInstances.Add(VkSubInstance);
-                        }
-                    }
+                    VkSubInstance VkSubInstance = new VkWin32SubInstance(VkInstanceHandle, _win32Loader);
+                    VkSubInstances.Add(VkSubInstance);
                 }
             }
 
